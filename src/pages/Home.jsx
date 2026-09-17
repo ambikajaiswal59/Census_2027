@@ -1,13 +1,16 @@
 import { useRef, useState } from "react";
 import Header from "../components/Header.jsx";
 import Hero from "../components/Hero.jsx";
-import PhaseTimeline from "../components/PhaseTimeline.jsx";
+import ListPanel from "../components/ListPanel.jsx";
+
+import { phaseData } from "../data/phaseData.js";
+import { sourceData } from "../data/sourceData.js";
 import PhaseModal from "../components/PhaseModal.jsx";
 import DirectoryExplorer from "../components/DirectoryExplorer.jsx";
 import Footer from "../components/Footer.jsx";
 
 export default function Home() {
-  const [activePhase, setActivePhase] = useState(null);
+  const [activeItem, setActiveItem] = useState(null); // { type: 'phase' | 'source', index }
   const censusHeadRef = useRef(null);
   const directoryHeadRef = useRef(null);
 
@@ -64,7 +67,25 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <PhaseTimeline onOpenPhase={setActivePhase} />
+            <ListPanel
+              icon="ti-progress-check"
+              title="Phase timeline"
+              subtitle="Internal · the Census's own process stages"
+              countLabel={`${phaseData.length} ${phaseData.length === 1 ? "phase" : "phases"}`}
+              items={phaseData}
+              variant="phase"
+              onOpenItem={(i) => setActiveItem({ type: "phase", index: i })}
+            />
+
+            <ListPanel
+              icon="ti-news"
+              title="Official updates & sources"
+              subtitle="External · press releases & news coverage"
+              countLabel={`${sourceData.length} ${sourceData.length === 1 ? "update" : "updates"}`}
+              items={sourceData}
+              variant="source"
+              onOpenItem={(i) => setActiveItem({ type: "source", index: i })}
+            />
           </section>
 
           <div
@@ -92,10 +113,7 @@ export default function Home() {
 
       <Footer />
 
-      <PhaseModal
-        activeIndex={activePhase}
-        onClose={() => setActivePhase(null)}
-      />
+      <PhaseModal activeItem={activeItem} onClose={() => setActiveItem(null)} />
     </>
   );
 }
