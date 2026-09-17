@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-bgApp text-text font-sans;
+}
+
+/* Shimmer sweep used on primary/secondary buttons */
+@layer components {
+  .btn-shimmer {
+    @apply relative overflow-hidden isolate;
+  }
+  .btn-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    transform: skewX(-25deg);
+    transition: left 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .btn-shimmer:hover::after {
+    left: 130%;
+  }
+}
