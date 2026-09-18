@@ -11,9 +11,7 @@ import { formatIndianNumber } from '../utils/formatNumber.js'
 
 export default function DirectoryExplorer({ stats }) {
   const [level, setLevel] = useState('State')
-  const [searchInput, setSearchInput] = useState('')
   const [query, setQuery] = useState('')
-  const [sort, setSort] = useState('Relevance')
 
   // Built from the same /api/stats/latest response Hero uses (passed down
   // from Home.jsx), so both sections always agree. Falls back to the
@@ -38,110 +36,53 @@ export default function DirectoryExplorer({ stats }) {
     : fallbackLocalBodyTree
 
   const rows = useMemo(() => {
-    let data = (sample[level] || sample.State).filter(
-      (r) =>
-        !query ||
-        r[0].toLowerCase().includes(query.toLowerCase()) ||
-        r[2].includes(query),
+    return (sample[level] || []).filter(
+      (r) => !query || r[0].toLowerCase().includes(query.toLowerCase()) || r[2].includes(query),
     )
-    if (sort === 'Name A–Z') data = [...data].sort((a, b) => a[0].localeCompare(b[0]))
-    if (sort === 'Code') data = [...data].sort((a, b) => a[2].localeCompare(b[2], undefined, { numeric: true }))
-    return data
-  }, [level, query, sort])
+  }, [level, query])
 
-  function runSearch() {
-    setQuery(searchInput)
-  }
-
-  function pickQuickLevel(l) {
-    setLevel(l)
+  function handleSetLevel(newLevel) {
+    setLevel(newLevel)
+    setQuery('')
   }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-      <div className="border-b border-line bg-gradient-to-b from-[#F9FBFE] to-[#FBFCFE] p-4 sm:p-[19px_20px]">
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-[165px_1fr_125px]">
-          <select
-            value={levels.includes(level) ? level : 'State'}
-            onChange={(e) => setLevel(e.target.value)}
-            className="h-[42px] rounded-[7px] border border-line bg-white px-2.5 text-[13px] text-text"
-          >
-            {levels.map((l) => (
-              <option key={l}>{l}</option>
-            ))}
-          </select>
-
-          <div className="relative flex">
-            <input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') runSearch()
-              }}
-              placeholder="Search by name or LGD code…"
-              className="h-[42px] w-full rounded-[7px] border border-line bg-white py-0 pl-2.5 pr-[70px] text-[13px] text-text"
-            />
-            <button
-              type="button"
-              onClick={runSearch}
-              className="absolute right-1 top-1 h-[34px] rounded-[5px] border-0 bg-navy px-3 text-xs text-white"
-            >
-              Search
-            </button>
-          </div>
-
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="h-[42px] rounded-[7px] border border-line bg-white px-2.5 text-[13px] text-text"
-          >
-            <option>Relevance</option>
-            <option>Name A–Z</option>
-            <option>Code</option>
-          </select>
-        </div>
-
-        <div className="mt-[11px] flex flex-wrap gap-[7px]">
-          {quickLevels.map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => pickQuickLevel(l)}
-              className="rounded-[18px] border border-line bg-white px-2.5 py-1.5 text-[11px] text-muted hover:border-blue hover:text-blue"
-            >
-              {l === 'State' ? 'States & UTs' : l === 'Development Block' ? 'Development Blocks' : `${l}s`}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-[.72fr_1.28fr]">
         <div className="border-b border-line p-[19px] md:border-b-0 md:border-r">
           <h3 className="mb-3 font-sans text-[13px]">Administrative hierarchy</h3>
           <div className="mb-[11px] text-[11px] text-muted">
-            India / States / Districts / Sub-Districts / Development Blocks / Villages
+            India / States / Districts / Sub-Districts / Villages
           </div>
-          <TreeList items={hierarchyTree} />
+          <TreeList items={hierarchyTree} activeLevel={level} onSelect={handleSetLevel} />
 
-          <div className="mt-3.5 text-[11px] text-muted">Local body classification</div>
-          <TreeList items={localBodyTree} />
+          <div className="mb-[11px] mt-3.5 text-[11px] text-muted">Local body classification</div>
+          <TreeList items={localBodyTree} activeLevel={level} onSelect={handleSetLevel} />
         </div>
 
         <div className="overflow-auto p-[19px]">
           <h3 className="mb-3 font-sans text-[13px]">
             Directory results{' '}
             <span className="font-normal text-muted">
-              ({(levels.includes(level) ? level : 'State')} · demonstration data)
+              ({levelLabels[level] || level} · demonstration data)
             </span>
           </h3>
+
+          <div className="relative mb-[15px]">
+            <i className="ti ti-search pointer-events-none absolute left-[13px] top-1/2 -translate-y-1/2 text-[15px] text-muted" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search within ${levelLabels[level] || level}…`}
+              className="h-[42px] w-full rounded-[9px] border border-line bg-soft pl-[37px] pr-3 text-[13px] text-text transition-colors duration-150 focus:border-blue focus:bg-white focus:shadow-[0_0_0_3px_rgba(29,95,167,.15)] focus:outline-none"
+            />
+          </div>
+
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr>
                 {['Name', 'Level', 'LGD code', 'Status'].map((h) => (
-                  <th
-                    key={h}
-                    className="bg-bgApp p-2.5 text-left text-[10px] uppercase tracking-[.04em] text-[#596577]"
-                  >
+                  <th key={h} className="bg-bgApp p-2.5 text-left text-[10px] uppercase tracking-[.04em] text-[#596577]">
                     {h}
                   </th>
                 ))}
