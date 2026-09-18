@@ -1,8 +1,21 @@
 import Button from './Button.jsx'
 import StatCard from './StatCard.jsx'
-import { heroStats } from '../data/sampleData.js'
+import { heroStats as fallbackHeroStats } from '../data/sampleData.js'
+import { formatIndianNumber } from '../utils/formatNumber.js'
 
-export default function Hero({ onScrollToCensus }) {
+export default function Hero({ onScrollToCensus, stats, loading }) {
+  // Live values from /api/stats/latest, falling back to static sample
+  // data while loading or if the API call ever fails.
+  const villages = stats ? formatIndianNumber(stats.villages) : '6,77,523'
+
+  const statCards = stats
+    ? [
+        { icon: 'ti-flag', value: formatIndianNumber(stats.states_uts), label: 'States & UTs' },
+        { icon: 'ti-map', value: formatIndianNumber(stats.districts), label: 'Districts' },
+        { icon: 'ti-map-2', value: formatIndianNumber(stats.sub_districts), label: 'Sub-Districts' },
+        { icon: 'ti-building', value: formatIndianNumber(stats.development_blocks), label: 'Development Blocks' },
+      ]
+    : fallbackHeroStats
   return (
     <section className="bg-gradient-to-b from-[#F8FAFD] to-bgApp py-9 sm:py-[30px]">
       <div className="mx-auto w-full max-w-wrap px-4 sm:px-6">
@@ -63,7 +76,9 @@ export default function Hero({ onScrollToCensus }) {
                 <i className="ti ti-building-community" />
               </div>
               <div>
-                <div className="font-serif text-[32px] leading-[.95] sm:text-[39px]">6,77,523</div>
+                <div className="font-serif text-[32px] leading-[.95] sm:text-[39px]">
+                  {loading ? '…' : villages}
+                </div>
                 <div className="mt-[5px] text-[13px] font-extrabold text-[#F2C078]">Villages</div>
                 <div className="mt-[3px] text-[10px] text-[#C9D7E7]">
                   Primary location records for Census-ready navigation
@@ -72,7 +87,7 @@ export default function Hero({ onScrollToCensus }) {
             </div>
 
             <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-              {heroStats.map((s) => (
+              {statCards.map((s) => (
                 <StatCard key={s.label} icon={s.icon} value={s.value} label={s.label} />
               ))}
             </div>

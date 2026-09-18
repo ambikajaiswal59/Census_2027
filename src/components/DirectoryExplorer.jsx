@@ -1,12 +1,41 @@
 import { useMemo, useState } from 'react'
 import TreeList from './TreeList.jsx'
-import { sample, levels, hierarchyTree, localBodyTree, quickLevels } from '../data/sampleData.js'
+import {
+  sample,
+  levels,
+  hierarchyTree as fallbackHierarchyTree,
+  localBodyTree as fallbackLocalBodyTree,
+  quickLevels,
+} from '../data/sampleData.js'
+import { formatIndianNumber } from '../utils/formatNumber.js'
 
-export default function DirectoryExplorer() {
+export default function DirectoryExplorer({ stats }) {
   const [level, setLevel] = useState('State')
   const [searchInput, setSearchInput] = useState('')
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('Relevance')
+
+  // Built from the same /api/stats/latest response Hero uses (passed down
+  // from Home.jsx), so both sections always agree. Falls back to the
+  // static sample file while loading or if the API call fails.
+  const hierarchyTree = stats
+    ? [
+        { label: 'States / UTs', value: formatIndianNumber(stats.states_uts) },
+        { label: 'Districts', value: formatIndianNumber(stats.districts) },
+        { label: 'Sub-Districts', value: formatIndianNumber(stats.sub_districts) },
+        { label: 'Development Blocks', value: formatIndianNumber(stats.development_blocks) },
+        { label: 'Villages', value: formatIndianNumber(stats.villages) },
+      ]
+    : fallbackHierarchyTree
+
+  const localBodyTree = stats
+    ? [
+        { label: 'Rural Local Bodies', value: formatIndianNumber(stats.rural_local_bodies) },
+        { label: 'Traditional Local Bodies', value: formatIndianNumber(stats.traditional_local_bodies) },
+        { label: 'Urban Local Bodies', value: formatIndianNumber(stats.urban_local_bodies) },
+        { label: 'Cantonment Boards', value: formatIndianNumber(stats.cantonment_boards) },
+      ]
+    : fallbackLocalBodyTree
 
   const rows = useMemo(() => {
     let data = (sample[level] || sample.State).filter(

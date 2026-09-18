@@ -5,11 +5,16 @@ import PhaseTimeline from "../components/PhaseTimeline.jsx";
 import PhaseModal from "../components/PhaseModal.jsx";
 import DirectoryExplorer from "../components/DirectoryExplorer.jsx";
 import Footer from "../components/Footer.jsx";
+import { useStats } from "../hooks/useStats.js";
 
 export default function Home() {
   const [activePhase, setActivePhase] = useState(null);
   const censusHeadRef = useRef(null);
   const directoryHeadRef = useRef(null);
+
+  // Single API call for the whole page - /api/stats/latest.
+  // Passed down to Hero (KPI strip) and DirectoryExplorer (hierarchy tree).
+  const { data: stats, loading: statsLoading, error: statsError } = useStats();
 
   function scrollHeaderToCenter(target) {
     if (!target) return;
@@ -42,7 +47,7 @@ export default function Home() {
         onScrollToDirectory={scrollToDirectory}
       />
 
-      <Hero onScrollToCensus={scrollToCensus} />
+      <Hero onScrollToCensus={scrollToCensus} stats={stats} loading={statsLoading} />
 
       <main className="mx-auto w-full max-w-wrap px-4 sm:px-6">
         <section id="directory">
@@ -82,11 +87,20 @@ export default function Home() {
               </div>
             </div>
             <p className="m-0 text-xs text-text">
-              Last sync: <b>11 Sep 2026</b>
+              Last sync:{" "}
+              <b>
+                {stats?.created_at
+                  ? new Date(stats.created_at).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "11 Sep 2026"}
+              </b>
             </p>
           </div>
 
-          <DirectoryExplorer />
+          <DirectoryExplorer stats={stats} />
         </section>
       </main>
 
