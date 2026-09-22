@@ -49,7 +49,7 @@ export const sample = {
 }
 
 export const levelLabels = {
-  State: 'States & UTs',
+  State: 'States / UTs',
   District: 'Districts',
   'Sub-District': 'Sub-Districts',
   'Development Block': 'Development Blocks',

@@ -37,11 +37,11 @@ export default function PhaseModal({ activeItem, onClose }) {
 
         <div className="mb-[18px] pr-[30px]">
           {isSource ? (
-            <div className="mb-1.5 text-[10px] font-extrabold tracking-[.11em] text-saffron">
+            <div className="mb-1.5 text-[15px] font-extrabold tracking-[.11em] text-saffron">
               {item.source.toUpperCase()} · {item.date}
             </div>
           ) : (
-            <div className="mb-1.5 text-[10px] font-extrabold tracking-[.11em] text-blue">
+            <div className="mb-1.5 text-[15px] font-extrabold tracking-[.11em] text-blue">
               CENSUS 2027 · PHASE {String(activeItem.index + 1).padStart(2, '0')}
             </div>
           )}
@@ -80,7 +80,7 @@ export default function PhaseModal({ activeItem, onClose }) {
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 rounded-[9px] bg-blue px-[15px] py-2.5 text-xs font-bold text-white hover:bg-navy2"
             >
-              Read full article <i className="ti ti-external-link" />
+              Read Full le <i className="ti ti-external-link" />
             </a>
           </div>
         )}
