@@ -2,7 +2,7 @@ import Button from './Button.jsx'
 import StatCard from './StatCard.jsx'
 import { heroStats } from '../data/sampleData.js'
 
-export default function Hero({ onScrollToCensus }) {
+export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
   return (
     <section className="bg-gradient-to-b from-[#F8FAFD] to-bgApp py-9 sm:py-[30px]">
       <div className="mx-auto w-full max-w-wrap px-4 sm:px-6">
@@ -16,14 +16,18 @@ export default function Hero({ onScrollToCensus }) {
               <span className="block text-[#b20000]">Census 2027 Map Data</span>
             </h1>
             <div className="mt-[17px] text-[19px] font-bold leading-[1.45] text-blue">
-              Integrated geographic information from State to Village level.
+              Integrated geographic information from State to Village level
             </div>
             <p className="mt-2.5 max-w-[650px] text-[15px] leading-[1.7] text-muted">
               Explore administrative hierarchy, location records and Census 2027 information
-              through a single, structured public-facing map data portal.
+              through a single, structured public-facing map data portal
             </p>
             <div className="mt-[25px] flex flex-wrap gap-2.5">
-              <Button href="#directory" variant="primary">
+              <Button href="#directory" variant="primary" 
+              onClick={(e)=>{
+                e.preventDefault()
+                onScrollToDirectory()
+              }}>
                 Explore Directory <span className="ml-0.5 inline-block transition-transform group-hover:translate-x-1">→</span>
               </Button>
               <Button
@@ -44,10 +48,10 @@ export default function Hero({ onScrollToCensus }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-line bg-card p-[21px] shadow-card">
+          <div className="rounded-2xl border border-line bg-card p-[22px] shadow-card">
             <div className="mb-3.5 flex items-start justify-between">
               <div>
-                <div className="mb-1 text-[10px] font-extrabold tracking-[.11em] text-blue">
+                <div className="mt-1  text-[15px] font-bold tracking-[.11em] text-blue">
                   ADMINISTRATIVE SNAPSHOT
                 </div>
                 <h3 className="font-sans text-[18px] font-extrabold text-navy">India at a glance</h3>

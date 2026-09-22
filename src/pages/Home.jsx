@@ -45,10 +45,10 @@ export default function Home() {
         onScrollToDirectory={scrollToDirectory}
       />
 
-      <Hero onScrollToCensus={scrollToCensus} />
+      <Hero onScrollToCensus={scrollToCensus} onScrollToDirectory={scrollToDirectory} />
 
       <main className="mx-auto w-full max-w-wrap px-4 sm:px-6">
-        <section id="directory">
+        <section >
           <section id="phases">
             <div
               ref={censusHeadRef}
@@ -91,6 +91,7 @@ export default function Home() {
           <div
             ref={directoryHeadRef}
             className="mb-4 flex flex-wrap items-end justify-between gap-5"
+            id="directory"
           >
             <div>
               <h2 className="font-serif text-[23px] font-semibold tracking-[-.015em] text-navy sm:text-[29px]">

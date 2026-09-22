@@ -1,41 +1,58 @@
-import { useMemo, useState } from 'react'
-import TreeList from './TreeList.jsx'
-import { sample, hierarchyTree, localBodyTree, levelLabels } from '../data/sampleData.js'
+import { useMemo, useState } from "react";
+import TreeList from "./TreeList.jsx";
+import {
+  sample,
+  hierarchyTree,
+  localBodyTree,
+  levelLabels,
+} from "../data/sampleData.js";
 
 export default function DirectoryExplorer() {
-  const [level, setLevel] = useState('State')
-  const [query, setQuery] = useState('')
+  const [level, setLevel] = useState("State");
+  const [query, setQuery] = useState("");
 
   const rows = useMemo(() => {
     return (sample[level] || []).filter(
-      (r) => !query || r[0].toLowerCase().includes(query.toLowerCase()) || r[2].includes(query),
-    )
-  }, [level, query])
+      (r) =>
+        !query ||
+        r[0].toLowerCase().includes(query.toLowerCase()) ||
+        r[2].includes(query),
+    );
+  }, [level, query]);
 
   function handleSetLevel(newLevel) {
-    setLevel(newLevel)
-    setQuery('')
+    setLevel(newLevel);
+    setQuery("");
   }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
       <div className="grid grid-cols-1 md:grid-cols-[.72fr_1.28fr]">
         <div className="border-b border-line p-[19px] md:border-b-0 md:border-r">
-          <h3 className="mb-3 font-sans text-[13px]">Administrative hierarchy</h3>
-          <div className="mb-[11px] text-[11px] text-muted">
-            India / States / Districts / Sub-Districts / Villages
-          </div>
-          <TreeList items={hierarchyTree} activeLevel={level} onSelect={handleSetLevel} />
+          <h3 className="-mx-[19px] -mt-[19px] mb-3 block rounded-t-2xl bg-gradient-to-br from-navy to-navy2 px-[19px] py-3 font-sans text-[20px] text-white md:rounded-tr-none">
+            Administrative hierarchy
+          </h3>
 
-          <div className="mb-[11px] mt-3.5 text-[11px] text-muted">Local body classification</div>
-          <TreeList items={localBodyTree} activeLevel={level} onSelect={handleSetLevel} />
+          <TreeList
+            items={hierarchyTree}
+            activeLevel={level}
+            onSelect={handleSetLevel}
+          />
+
+          <div className="-mx-[19px] mb-[11px] mt-3.5 block bg-gradient-to-br from-navy to-navy2 px-[19px] py-3 text-[20px] text-white ">
+            Local body classification
+          </div>
+          <TreeList
+            items={localBodyTree}
+            activeLevel={level}
+            onSelect={handleSetLevel}
+          />
         </div>
 
         <div className="overflow-auto p-[19px]">
-          <h3 className="mb-3 font-sans text-[13px]">
-            Directory results{' '}
-            <span className="font-normal text-muted">
-              ({levelLabels[level] || level} · demonstration data)
+          <h3 className="mb-3 font-sans text-[20px]">
+            <span className="font-bold ">
+              {levelLabels[level] || level}
             </span>
           </h3>
 
@@ -52,8 +69,11 @@ export default function DirectoryExplorer() {
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr>
-                {['Name', 'Level', 'LGD code', 'Status'].map((h) => (
-                  <th key={h} className="bg-bgApp p-2.5 text-left text-[10px] uppercase tracking-[.04em] text-[#596577]">
+                {["Name", "Level", "LGD code", "Status"].map((h) => (
+                  <th
+                    key={h}
+                    className="bg-bgApp p-2.5 text-left text-[10px] uppercase tracking-[.04em] text-[#596577]"
+                  >
                     {h}
                   </th>
                 ))}
@@ -73,9 +93,13 @@ export default function DirectoryExplorer() {
                       <b>{r[0]}</b>
                     </td>
                     <td className="border-b border-[#EDF0F4] p-2.5">{r[1]}</td>
-                    <td className="border-b border-[#EDF0F4] p-2.5 font-mono text-blue">{r[2]}</td>
+                    <td className="border-b border-[#EDF0F4] p-2.5 font-mono text-blue">
+                      {r[2]}
+                    </td>
                     <td className="border-b border-[#EDF0F4] p-2.5">
-                      <span className="rounded-xl bg-green2 px-[7px] py-1 text-[10px] text-green">Active</span>
+                      <span className="rounded-xl bg-green2 px-[7px] py-1 text-[10px] text-green">
+                        Active
+                      </span>
                     </td>
                   </tr>
                 ))
@@ -91,5 +115,5 @@ export default function DirectoryExplorer() {
         </p>
       </div>
     </div>
-  )
+  );
 }
