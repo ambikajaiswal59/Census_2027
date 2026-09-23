@@ -37,7 +37,7 @@ export default function PhaseModal({ activeItem, onClose }) {
 
         <div className="mb-[18px] pr-[30px]">
           {isSource ? (
-            <div className="mb-1.5 text-[15px] font-extrabold tracking-[.11em] text-saffron">
+            <div className="mb-1.5 text-[17px] font-extrabold tracking-[.11em] text-saffron">
               {item.source.toUpperCase()} · {item.date}
             </div>
           ) : (
@@ -80,7 +80,7 @@ export default function PhaseModal({ activeItem, onClose }) {
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 rounded-[9px] bg-blue px-[15px] py-2.5 text-xs font-bold text-white hover:bg-navy2"
             >
-              Read Full le <i className="ti ti-external-link" />
+              Read Full  <i className="ti ti-external-link" />
             </a>
           </div>
         )}

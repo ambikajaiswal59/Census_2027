@@ -61,7 +61,7 @@ export default function Home() {
                 <h2 className="font-serif text-[23px] font-semibold tracking-[-.015em] text-navy sm:text-[29px]">
                   Phases &amp; official updates
                 </h2>
-                <div className="mt-[5px] max-w-[700px] text-[13px] leading-[1.6] text-muted">
+                <div className="mt-[5px] max-w-full text-[13px] leading-[1.6] text-muted">
                   Track where the 16th Census of India stands — from house
                   listing to population enumeration and result publication.
                 </div>
@@ -70,7 +70,7 @@ export default function Home() {
             <ListPanel
               icon="ti-progress-check"
               title="Phase timeline"
-              subtitle="Internal · the Census's own process stages"
+              // subtitle="Internal · the Census's own process stages"
               countLabel={`${phaseData.length} ${phaseData.length === 1 ? "phase" : "phases"}`}
               items={phaseData}
               variant="phase"
@@ -97,7 +97,7 @@ export default function Home() {
               <h2 className="font-serif text-[23px] font-semibold tracking-[-.015em] text-navy sm:text-[29px]">
                 Administrative Directory Explorer
               </h2>
-              <div className="mt-[5px] max-w-[700px] text-[13px] leading-[1.6] text-muted">
+              <div className="mt-[5px] max-w-full text-[13px] leading-[1.6] text-muted">
                 Browse and search the administrative hierarchy from State and
                 District through Sub-District, Block and Village-level
                 information.

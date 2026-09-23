@@ -1,8 +1,10 @@
-import Button from './Button.jsx'
-import StatCard from './StatCard.jsx'
-import { heroStats } from '../data/sampleData.js'
+import Button from "./Button.jsx";
+import StatCard from "./StatCard.jsx";
+import { heroStats } from "../data/sampleData.js";
+import useCountUp from "../hooks/useCountUp.js";
 
 export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
+  const villageCount = useCountUp("6,77,523", { duration: 1400 });
   return (
     <section className="bg-gradient-to-b from-[#F8FAFD] to-bgApp py-9 sm:py-[30px]">
       <div className="mx-auto w-full max-w-wrap px-4 sm:px-6">
@@ -19,32 +21,33 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
               Integrated geographic information from State to Village level
             </div>
             <p className="mt-2.5 max-w-[650px] text-[15px] leading-[1.7] text-muted">
-              Explore administrative hierarchy, location records and Census 2027 information
-              through a single, structured public-facing map data portal
+              Explore administrative hierarchy, location records and Census 2027
+              information through a single, structured public-facing map data
+              portal
             </p>
             <div className="mt-[25px] flex flex-wrap gap-2.5">
-              <Button href="#directory" variant="primary" 
-              onClick={(e)=>{
-                e.preventDefault()
-                onScrollToDirectory()
-              }}>
-                Explore Directory <span className="ml-0.5 inline-block transition-transform group-hover:translate-x-1">→</span>
+              <Button
+                href="#directory"
+                variant="primary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onScrollToDirectory();
+                }}
+              >
+                Explore Directory{" "}
+                <span className="ml-0.5 inline-block transition-transform group-hover:translate-x-1">
+                  →
+                </span>
               </Button>
               <Button
                 variant="secondary"
                 onClick={(e) => {
-                  e.preventDefault()
-                  onScrollToCensus()
+                  e.preventDefault();
+                  onScrollToCensus();
                 }}
               >
                 Census 2027 Update
               </Button>
-            </div>
-            <div className="mt-[19px] flex items-start gap-2 text-[11px] text-[#6D7786]">
-              <span>●</span>
-              <span>
-                <b className="text-navy">Designed for public access and discovery.</b>
-              </span>
             </div>
           </div>
 
@@ -54,7 +57,9 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
                 <div className="mt-1  text-[15px] font-bold tracking-[.11em] text-blue">
                   ADMINISTRATIVE SNAPSHOT
                 </div>
-                <h3 className="font-sans text-[18px] font-extrabold text-navy">India at a glance</h3>
+                <h3 className="font-sans text-[18px] font-extrabold text-navy">
+                  India at a glance
+                </h3>
               </div>
               <div className="flex items-center gap-1.5 text-[11px] font-bold text-green">
                 <span className="h-[7px] w-[7px] rounded-full bg-green shadow-[0_0_0_4px_#E8F5EE]" />
@@ -67,8 +72,12 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
                 <i className="ti ti-building-community" />
               </div>
               <div>
-                <div className="font-serif text-[32px] leading-[.95] sm:text-[39px]">6,77,523</div>
-                <div className="mt-[5px] text-[13px] font-extrabold text-[#F2C078]">Villages</div>
+                <div className="font-serif text-[32px] leading-[.95] sm:text-[39px]">
+                  {villageCount}
+                </div>
+                <div className="mt-[5px] text-[13px] font-extrabold text-[#F2C078]">
+                  Villages
+                </div>
                 <div className="mt-[3px] text-[10px] text-[#C9D7E7]">
                   Primary location records for Census-ready navigation
                 </div>
@@ -77,18 +86,25 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
 
             <div className="mt-2.5 grid grid-cols-2 gap-2.5">
               {heroStats.map((s) => (
-                <StatCard key={s.label} icon={s.icon} value={s.value} label={s.label} />
+                <StatCard
+                  key={s.label}
+                  icon={s.icon}
+                  value={s.value}
+                  label={s.label}
+                  animate
+                />
               ))}
             </div>
 
             <div className="mt-3 flex flex-wrap justify-between gap-2.5 border-t border-line pt-2.5 text-[10px] text-[#7A8492]">
               <span>
-                <strong className="text-[#475467]">Source</strong> Local Government Directory
+                <strong className="text-[#475467]">Source</strong> Local
+                Government Directory
               </span>
             </div>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }

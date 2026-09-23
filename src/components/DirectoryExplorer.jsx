@@ -39,14 +39,14 @@ export default function DirectoryExplorer() {
             onSelect={handleSetLevel}
           />
 
-          <div className="-mx-[19px] mb-[11px] mt-3.5 block bg-gradient-to-br from-navy to-navy2 px-[19px] py-3 text-[20px] text-white ">
+          {/* <div className="-mx-[19px] mb-[11px] mt-3.5 block bg-gradient-to-br from-navy to-navy2 px-[19px] py-3 text-[20px] text-white ">
             Local body classification
           </div>
           <TreeList
             items={localBodyTree}
             activeLevel={level}
             onSelect={handleSetLevel}
-          />
+          /> */}
         </div>
 
         <div className="overflow-auto p-[19px]">
