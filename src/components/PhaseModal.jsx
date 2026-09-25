@@ -61,7 +61,7 @@ export default function PhaseModal({ activeItem, onClose }) {
 
         <div>
           <p className="mt-4 text-[13px] leading-[1.7] text-muted">
-            {isSource ? item.summary : item.detail}
+            {/* {isSource ? item.summary : item.detail} */}
           </p>
           <ul className="mt-3.5 list-disc pl-[18px]">
             {item.points.map((pt) => (

@@ -8,7 +8,7 @@ export default function Button({
   className = '',
 }) {
   const base =
-    'btn-shimmer inline-flex items-center gap-2 rounded-full px-5 py-3 text-[13px] font-bold border-2 cursor-pointer transition-[background,border-color,color,transform,box-shadow] duration-300'
+    'btn-shimmer inline-flex items-center lg:mt-2 gap-2 rounded-full px-1 py-0 lg:px-2 lg:py-1  text-[10px] lg:text-[13px] font-bold border-2 cursor-pointer transition-[background,border-color,color,transform,box-shadow] duration-300'
   const variants = {
     primary:
       'bg-blue border-blue text-white hover:bg-transparent hover:text-blue hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(29,95,167,.22),inset_0_0_0_1px_rgba(29,95,167,.06)]',
