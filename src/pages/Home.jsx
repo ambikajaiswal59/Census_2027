@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import Header from "../components/Header.jsx";
 import Hero from "../components/Hero.jsx";
 import ListPanel from "../components/ListPanel.jsx";
-
+import { useStats } from "../useStats.js";
 import { phaseData } from "../data/phaseData.js";
 import { sourceData } from "../data/sourceData.js";
 import PhaseModal from "../components/PhaseModal.jsx";
@@ -10,10 +10,13 @@ import DirectoryExplorer from "../components/DirectoryExplorer.jsx";
 import Footer from "../components/Footer.jsx";
 
 export default function Home() {
-  const [activeItem, setActiveItem] = useState(null); // { type: 'phase' | 'source', index }
+  const [activeItem, setActiveItem] = useState(null);
   const censusHeadRef = useRef(null);
   const directoryHeadRef = useRef(null);
-
+  const { data: stats, loading: statsLoading, error: statsError } = useStats();
+  console.log("Stats data:", stats);
+  console.log("Stats loading:", statsLoading);
+  console.log("Stats error:", statsError);
   function scrollHeaderToCenter(target) {
     if (!target) return;
     const headerHeight = document.querySelector("header")?.offsetHeight || 0;
@@ -45,10 +48,14 @@ export default function Home() {
         onScrollToDirectory={scrollToDirectory}
       />
 
-      <Hero onScrollToCensus={scrollToCensus} onScrollToDirectory={scrollToDirectory} />
-
+      {/* <Hero onScrollToCensus={scrollToCensus} onScrollToDirectory={scrollToDirectory} /> */}
+      <Hero
+        onScrollToCensus={scrollToCensus}
+        stats={stats}
+        loading={statsLoading}
+      />
       <main className="mx-auto w-full max-w-wrap px-4 sm:px-6">
-        <section >
+        <section>
           <section id="phases">
             <div
               ref={censusHeadRef}
@@ -104,11 +111,20 @@ export default function Home() {
               </div>
             </div>
             <p className="m-0 text-xs text-text">
-              Last sync: <b>11 Sep 2026</b>
+              Last sync:{" "}
+              <b>
+                {stats?.created_at
+                  ? new Date(stats.created_at).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "11 Sep 2026"}
+              </b>
             </p>
           </div>
 
-          <DirectoryExplorer />
+          <DirectoryExplorer stats={stats} />
         </section>
       </main>
 

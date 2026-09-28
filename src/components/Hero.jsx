@@ -1,8 +1,21 @@
 import Button from './Button.jsx'
 import StatCard from './StatCard.jsx'
-import { heroStats } from '../data/sampleData.js'
+import { heroStats as fallbackHeroStats } from '../data/sampleData.js'
+import { formatIndianNumber } from '../utils.js'
 
-export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
+export default function Hero({ onScrollToCensus, stats, loading }) {
+  // Live values from /api/stats/latest, falling back to static sample
+  // data while loading or if the API call ever fails.
+  const villages = stats ? formatIndianNumber(stats.villages) : '6,77,523'
+
+  const statCards = stats
+    ? [
+        { icon: 'ti-flag', value: formatIndianNumber(stats.states_uts), label: 'States & UTs' },
+        { icon: 'ti-map', value: formatIndianNumber(stats.districts), label: 'Districts' },
+        { icon: 'ti-map-2', value: formatIndianNumber(stats.sub_districts), label: 'Sub-Districts' },
+        { icon: 'ti-building', value: formatIndianNumber(stats.development_blocks), label: 'Development Blocks' },
+      ]
+    : fallbackHeroStats
   return (
     <section className="bg-gradient-to-b from-[#F8FAFD] to-bgApp py-9 sm:py-[30px]">
       <div className="mx-auto w-full max-w-wrap px-4 sm:px-6">
@@ -16,18 +29,14 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
               <span className="block text-[#b20000]">Census 2027 Map Data</span>
             </h1>
             <div className="mt-[17px] text-[19px] font-bold leading-[1.45] text-blue">
-              Integrated geographic information from State to Village level
+              Integrated geographic information from State to Village level.
             </div>
             <p className="mt-2.5 max-w-[650px] text-[15px] leading-[1.7] text-muted">
               Explore administrative hierarchy, location records and Census 2027 information
-              through a single, structured public-facing map data portal
+              through a single, structured public-facing map data portal.
             </p>
             <div className="mt-[25px] flex flex-wrap gap-2.5">
-              <Button href="#directory" variant="primary" 
-              onClick={(e)=>{
-                e.preventDefault()
-                onScrollToDirectory()
-              }}>
+              <Button href="#directory" variant="primary">
                 Explore Directory <span className="ml-0.5 inline-block transition-transform group-hover:translate-x-1">→</span>
               </Button>
               <Button
@@ -48,10 +57,10 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-line bg-card p-[22px] shadow-card">
+          <div className="rounded-2xl border border-line bg-card p-[21px] shadow-card">
             <div className="mb-3.5 flex items-start justify-between">
               <div>
-                <div className="mt-1  text-[15px] font-bold tracking-[.11em] text-blue">
+                <div className="mb-1 text-[10px] font-extrabold tracking-[.11em] text-blue">
                   ADMINISTRATIVE SNAPSHOT
                 </div>
                 <h3 className="font-sans text-[18px] font-extrabold text-navy">India at a glance</h3>
@@ -67,7 +76,9 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
                 <i className="ti ti-building-community" />
               </div>
               <div>
-                <div className="font-serif text-[32px] leading-[.95] sm:text-[39px]">6,77,523</div>
+                <div className="font-serif text-[32px] leading-[.95] sm:text-[39px]">
+                  {loading ? '…' : villages}
+                </div>
                 <div className="mt-[5px] text-[13px] font-extrabold text-[#F2C078]">Villages</div>
                 <div className="mt-[3px] text-[10px] text-[#C9D7E7]">
                   Primary location records for Census-ready navigation
@@ -76,7 +87,7 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
             </div>
 
             <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-              {heroStats.map((s) => (
+              {statCards.map((s) => (
                 <StatCard key={s.label} icon={s.icon} value={s.value} label={s.label} />
               ))}
             </div>
