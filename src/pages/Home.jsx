@@ -68,7 +68,7 @@ export default function Home() {
                 <h2 className="font-serif text-[23px] font-semibold tracking-[-.015em] text-navy sm:text-[29px]">
                   Phases &amp; official updates
                 </h2>
-                <div className="mt-[5px] max-w-[700px] text-[13px] leading-[1.6] text-muted">
+                <div className="mt-[5px] max-w-full text-[13px] leading-[1.6] text-muted">
                   Track where the 16th Census of India stands — from house
                   listing to population enumeration and result publication.
                 </div>
@@ -105,9 +105,7 @@ export default function Home() {
                 Administrative Directory Explorer
               </h2>
               <div className="mt-[5px] max-w-[700px] text-[13px] leading-[1.6] text-muted">
-                Browse and search the administrative hierarchy from State and
-                District through Sub-District, Block and Village-level
-                information.
+                Search, explore and navigate India’s administrative data from State to Village level
               </div>
             </div>
             <p className="m-0 text-xs text-text">

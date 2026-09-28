@@ -32,7 +32,11 @@ export default function ListPanel({ icon, title, subtitle, items, variant = 'pha
         </span>
       </div>
 
-      <div className="grid max-h-[520px] gap-2.5 overflow-y-auto pr-2 [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]">
+      {/* CHANGE: grid-template-columns is now responsive. On mobile, a
+          single flexible column (grid-cols-1) — no forced minimum width,
+          so it can never be wider than the screen. From sm: up, restores
+          the original auto-fill/minmax(300px,1fr) card-grid behavior */}
+      <div className="grid max-h-[520px] grid-cols-1 gap-2.5 overflow-y-auto pr-2 sm:[grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]">
         {items.map((item, i) => (
           <ListRow
             key={item.title}
