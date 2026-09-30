@@ -11,7 +11,7 @@ const LEVEL_ENDPOINT = {
   "Development Block": "/api/directory/blocks",
   Village: "/api/directory/villages",
 };
-console.log("LEVEL_ENDPOINT", LEVEL_ENDPOINT);
+
 // These levels are big, so the backend paginates them (limit/offset)
 export const PAGED_LEVELS = new Set(["District", "Sub-District", "Development Block", "Village"]);
 export const PAGE_SIZE = 100;

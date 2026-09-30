@@ -23,9 +23,7 @@ export default function Home() {
   const censusHeadRef = useRef(null);
   const directoryHeadRef = useRef(null);
   const { data: stats, loading: statsLoading, error: statsError } = useStats();
-  console.log("Stats data:", stats);
-  console.log("Stats loading:", statsLoading);
-  console.log("Stats error:", statsError);
+
   function scrollHeaderToCenter(target) {
     if (!target) return;
     const headerHeight = document.querySelector("header")?.offsetHeight || 0;

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getLatestStats } from "../api/census.js";
 
 export default function useNationalStats() {
-  debugger;
+
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
 
