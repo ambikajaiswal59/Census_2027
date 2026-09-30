@@ -1,10 +1,18 @@
 import Button from "./Button.jsx";
 import StatCard from "./StatCard.jsx";
-import { heroStats } from "../data/sampleData.js";
+import { fmt } from "../utils.js";
 import useCountUp from "../hooks/useCountUp.js";
 
-export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
-  const villageCount = useCountUp("6,77,523", { duration: 1400 });
+const HERO_STATS = [
+  { icon: "ti-flag", key: "states_uts", label: "States & UTs" },
+  { icon: "ti-map", key: "districts", label: "Districts" },
+  { icon: "ti-map-2", key: "sub_districts", label: "Sub-Districts" },
+  { icon: "ti-building", key: "development_blocks", label: "Development Blocks" },
+];
+
+export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
+  // `stats` comes from GET /api/stats/latest (null while loading)
+  const villageCount = useCountUp(fmt(stats?.villages), { duration: 1400 });
   return (
     <section className="bg-gradient-to-b from-[#F8FAFD] to-bgApp py-4 lg:py-[30px]">
       <div className="mx-auto w-full max-w-wrap px-4 sm:px-6">
@@ -87,11 +95,11 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
             </div>
 
             <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-              {heroStats.map((s) => (
+              {HERO_STATS.map((s) => (
                 <StatCard
                   key={s.label}
                   icon={s.icon}
-                  value={s.value}
+                  value={fmt(stats?.[s.key])}
                   label={s.label}
                   animate
                 />
