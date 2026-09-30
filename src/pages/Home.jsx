@@ -8,8 +8,17 @@ import { sourceData } from "../data/sourceData.js";
 import PhaseModal from "../components/PhaseModal.jsx";
 import DirectoryExplorer from "../components/DirectoryExplorer.jsx";
 import Footer from "../components/Footer.jsx";
+import useNationalStats from "../hooks/useNationalStats.js";
 
 export default function Home() {
+  const { stats } = useNationalStats(); // GET /api/stats/latest
+  const lastSync = stats?.created_at
+    ? new Date(stats.created_at).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "—";
   const [activeItem, setActiveItem] = useState(null); // { type: 'phase' | 'source', index }
   const censusHeadRef = useRef(null);
   const directoryHeadRef = useRef(null);
@@ -45,7 +54,11 @@ export default function Home() {
         onScrollToDirectory={scrollToDirectory}
       />
 
-      <Hero onScrollToCensus={scrollToCensus} onScrollToDirectory={scrollToDirectory} />
+      <Hero
+        onScrollToCensus={scrollToCensus}
+        onScrollToDirectory={scrollToDirectory}
+        stats={stats}
+      />
 
       <main className="mx-auto w-full max-w-wrap px-4 sm:px-6">
         <section >
@@ -102,11 +115,11 @@ export default function Home() {
               </div>
             </div>
             <p className="m-0 text-xs text-text">
-              Last sync: <b>11 Sep 2026</b>
+              Last sync: <b>{lastSync}</b>
             </p>
           </div>
 
-          <DirectoryExplorer />
+          <DirectoryExplorer stats={stats} />
         </section>
       </main>
 
