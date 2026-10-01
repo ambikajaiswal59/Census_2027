@@ -6,7 +6,7 @@ export default function ListPanel({ icon, title, subtitle, items, variant = 'pha
   return (
     <div
       className={`mb-[30px] rounded-2xl border border-line bg-white p-[21px] shadow-card border-t-[3px] ${
-        isSource ? 'border-t-saffron' : 'border-t-blue'
+        isSource ? 'border-t-saffron' : 'border-t-navy'
       }`}
     >
       <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5">
@@ -14,7 +14,7 @@ export default function ListPanel({ icon, title, subtitle, items, variant = 'pha
           <h3 className="m-0 flex items-center gap-2 font-sans text-[15px] font-extrabold text-navy">
             <span
               className={`grid h-[26px] w-[26px] flex-shrink-0 place-items-center rounded-lg text-sm ${
-                isSource ? 'bg-[#FBEBD8] text-saffron' : 'bg-blue2 text-blue'
+                isSource ? 'bg-[#FBEBD8] text-saffron' : 'bg-blue2 text-navy'
               }`}
             >
               <i className={`ti ${icon}`} />

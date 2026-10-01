@@ -56,7 +56,7 @@ export default function ListRow({
           className={`hidden h-[30px] w-[30px] flex-shrink-0 place-items-center rounded-[9px] border border-line bg-soft transition-colors duration-150 sm:grid ${
             isSource
               ? "text-saffron hover:bg-saffron hover:text-white"
-              : "text-blue hover:bg-blue hover:text-white"
+              : "text-navy hover:bg-navy hover:text-white"
           }`}
         >
           <i className="ti ti-chevron-right" />
