@@ -41,7 +41,7 @@ export default function PhaseModal({ activeItem, onClose }) {
               {item.source.toUpperCase()} · {item.date}
             </div>
           ) : (
-            <div className="mb-1.5 text-[15px] font-extrabold tracking-[.11em] text-blue">
+            <div className="mb-1.5 text-[15px] font-extrabold tracking-[.11em] text-navy">
               CENSUS 2027 · PHASE {String(activeItem.index + 1).padStart(2, '0')}
             </div>
           )}
@@ -78,7 +78,7 @@ export default function PhaseModal({ activeItem, onClose }) {
               href={item.link}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-[9px] bg-blue px-[15px] py-2.5 text-xs font-bold text-white hover:bg-navy2"
+              className="inline-flex items-center gap-1.5 rounded-[9px] bg-navy px-[15px] py-2.5 text-xs font-bold text-white hover:bg-navy2"
             >
               Read Full  <i className="ti ti-external-link" />
             </a>
