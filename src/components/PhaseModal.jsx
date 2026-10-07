@@ -1,11 +1,20 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { phaseData } from '../data/phaseData.js'
 import { sourceData } from '../data/sourceData.js'
 
+const isImageLink = (url = '') => /\.(png|jpe?g|gif|webp|svg)$/i.test(url.split('?')[0])
+
 export default function PhaseModal({ activeItem, onClose }) {
+  const [showImage, setShowImage] = useState(false)
+
   const isOpen = !!activeItem
   const isSource = activeItem?.type === 'source'
   const item = isOpen ? (isSource ? sourceData[activeItem.index] : phaseData[activeItem.index]) : null
+
+  // Always start on the summary view when a different item is opened
+  useEffect(() => {
+    setShowImage(false)
+  }, [activeItem])
 
   useEffect(() => {
     function handleKey(e) {
@@ -17,6 +26,8 @@ export default function PhaseModal({ activeItem, onClose }) {
   }, [isOpen, onClose])
 
   if (!isOpen || !item) return null
+
+  const linkIsImage = isSource && isImageLink(item.link)
 
   return (
     <div
@@ -53,36 +64,66 @@ export default function PhaseModal({ activeItem, onClose }) {
           )}
         </div>
 
-        {!isSource && item.image && (
-          <div className="mt-4 overflow-hidden rounded-xl border border-line">
-            <img src={item.image} alt={item.title} className="block w-full" />
-          </div>
-        )}
+        {/* Source item, image view */}
+        {isSource && showImage ? (
+          <>
+            <div className="mt-4 overflow-hidden rounded-xl border border-line">
+              <img src={encodeURI(item.link)} alt={item.title} className="block w-full" />
+            </div>
+            <div className="mt-[18px] flex justify-end border-t border-line pt-4">
+              <button
+                type="button"
+                onClick={() => setShowImage(false)}
+                className="inline-flex items-center gap-1.5 rounded-[9px] border border-line bg-white px-[15px] py-2.5 text-xs font-bold text-navy hover:bg-bgApp"
+              >
+                ← Back
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            {!isSource && item.image && (
+              <div className="mt-4 overflow-hidden rounded-xl border border-line">
+                <img src={item.image} alt={item.title} className="block w-full" />
+              </div>
+            )}
 
-        <div>
-          <p className="mt-4 text-[13px] leading-[1.7] text-muted">
-            {/* {isSource ? item.summary : item.detail} */}
-          </p>
-          <ul className="mt-3.5 list-disc pl-[18px]">
-            {item.points.map((pt) => (
-              <li key={pt} className="mb-[7px] text-[12.5px] leading-[1.65] text-muted">
-                {pt}
-              </li>
-            ))}
-          </ul>
-        </div>
+            <div>
+              <p className="mt-4 text-[13px] leading-[1.7] text-muted">
+                {/* {isSource ? item.summary : item.detail} */}
+              </p>
+              <ul className="mt-3.5 list-disc pl-[18px]">
+                {item.points.map((pt) => (
+                  <li key={pt} className="mb-[7px] text-[12.5px] leading-[1.65] text-muted">
+                    {pt}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-        {isSource && (
-          <div className="mt-[18px] flex justify-end border-t border-line pt-4">
-            <a
-              href={item.link}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-[9px] bg-blue px-[15px] py-2.5 text-xs font-bold text-white hover:bg-navy2"
-            >
-              Read Full  <i className="ti ti-external-link" />
-            </a>
-          </div>
+            {isSource && (
+              <div className="mt-[18px] flex justify-end border-t border-line pt-4">
+                {linkIsImage ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowImage(true)}
+                    className="inline-flex items-center gap-1.5 rounded-[9px] bg-blue px-[15px] py-2.5 text-xs font-bold text-white hover:bg-navy2"
+                  >
+                    Read Full <i className="ti ti-external-link" />
+                  </button>
+                ) : (
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-[9px] bg-blue px-[15px] py-2.5 text-xs font-bold text-white hover:bg-navy2"
+                  >
+                    Read Full <i className="ti ti-external-link" />
+                  </a>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

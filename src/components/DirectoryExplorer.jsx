@@ -75,13 +75,13 @@ export default function DirectoryExplorer() {
                 {/* CHANGE: LGD code header now has an inline search input to its right */}
                 <th className="bg-bgApp p-2.5 text-left align-top text-[10px] uppercase tracking-[.04em] text-[#596577]">
                   <div className="flex flex-col items-start  gap-2">
-                    <span className="ml-1">LGD code</span>
+                    <span >LGD code</span>
                     <input
                       value={codeQuery}
                       onChange={(e) => setCodeQuery(e.target.value)}
                       placeholder="Search…"
                       onClick={(e) => e.stopPropagation()}
-                      className="h-6 w-20 min-w-0 rounded-md border border-line bg-white px-2 text-[10px] normal-case tracking-normal text-text focus:border-blue focus:outline-none"
+                      className="h-6 w-24 -ml-1 min-w-0 rounded-md border border-line bg-white px-2 text-[10px] normal-case tracking-normal text-text focus:border-blue focus:outline-none"
                     />
                   </div>
                 </th>
