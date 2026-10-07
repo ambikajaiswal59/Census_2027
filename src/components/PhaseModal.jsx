@@ -52,7 +52,7 @@ export default function PhaseModal({ activeItem, onClose }) {
               {item.source.toUpperCase()} · {item.date}
             </div>
           ) : (
-            <div className="mb-1.5 text-[15px] font-extrabold tracking-[.11em] text-blue">
+            <div className="mb-1.5 text-[15px] font-extrabold tracking-[.11em] text-navy">
               CENSUS 2027 · PHASE {String(activeItem.index + 1).padStart(2, '0')}
             </div>
           )}

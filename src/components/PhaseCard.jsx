@@ -12,7 +12,7 @@ export default function PhaseCard({ phase, index, isLast, onShowMore }) {
 
       <div className="rounded-2xl border border-line bg-card p-4 shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-cardHover sm:p-[22px_24px]">
         <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2.5">
-          <span className="text-[10px] font-extrabold uppercase tracking-[.1em] text-blue">
+          <span className="text-[10px] font-extrabold uppercase tracking-[.1em] text-navy sm:text-[11px]">
             Phase {String(index + 1).padStart(2, "0")}
           </span>
           <span className="h-[25px] whitespace-nowrap rounded-2xl bg-green2 px-2 py-1 text-[10px] text-green">
