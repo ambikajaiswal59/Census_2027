@@ -13,7 +13,7 @@ export default function useCountUp(rawValue, { duration = 1400 } = {}) {
 
   useEffect(() => {
     if (isNaN(numericEnd)) {
-      setDisplay(str) // not a number at all, just show as-is
+      setDisplay(str) 
       return
     }
 

@@ -2,50 +2,103 @@ import { useRef } from 'react'
 
 export default function TreeList({ items, activeLevel, onSelect, orientation = 'vertical' }) {
   const isHorizontal = orientation === 'horizontal'
-  // CHANGE: a ref object to hold a reference to each pill's actual DOM
-  // element, keyed by its level — so we can call browser scroll methods
-  // on the specific one that was clicked
   const itemRefs = useRef({})
 
-  // CHANGE: wraps the existing onSelect call, then scrolls the clicked
-  // item into view
   function handleClick(level) {
     onSelect(level)
     const el = itemRefs.current[level]
     if (el) {
       el.scrollIntoView({
-        behavior: 'smooth',   // animate the scroll instead of snapping instantly
-        inline: 'nearest',    // horizontal positioning — see explanation below
-        block: 'nearest',     // vertical positioning — irrelevant here, kept safe
+        behavior: 'smooth',
+        inline: 'nearest',
+        block: 'nearest',
       })
     }
   }
 
+  // ─────────────────────────────────────────────────────────
+  // HORIZONTAL — Separate bordered tabs
+  // ─────────────────────────────────────────────────────────
+  if (isHorizontal) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {items.map((item) => {
+          const isActive = item.level === activeLevel
+          return (
+            <button
+              key={item.level}
+              ref={(el) => { itemRefs.current[item.level] = el }}
+              onClick={() => handleClick(item.level)}
+              type="button"
+              className={`
+                flex flex-shrink-0 cursor-pointer items-center gap-2.5
+                whitespace-nowrap rounded-lg border-2 bg-white
+                px-4 py-2 text-[13px] transition-all duration-150
+                ${
+                  isActive
+                    ? 'border-[#0F2A4A] text-[#0F2A4A] font-semibold shadow-sm'
+                    : 'border-[#E4E8EF] text-[#5A6473] font-medium hover:border-[#0F2A4A]/40 hover:text-[#0F2A4A]'
+                }
+              `}
+            >
+              <span>{item.label}</span>
+              <span
+                className={`
+                  rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums
+                  ${
+                    isActive
+                      ? 'bg-[#0F2A4A] text-white'
+                      : 'bg-[#E1E6ED] text-[#5A6473]'
+                  }
+                `}
+              >
+                {item.value}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    )
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // VERTICAL — Separate bordered rows
+  // ─────────────────────────────────────────────────────────
   return (
-    <div className={isHorizontal ? 'flex flex-nowrap gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden' : ''}>
+    <div className="space-y-1.5">
       {items.map((item) => {
         const isActive = item.level === activeLevel
         return (
-          <div
+          <button
             key={item.level}
-            // CHANGE: attaches this specific DOM node to itemRefs, so
-            // itemRefs.current['District'] (for example) points at the
-            // actual <div> for the Districts pill
             ref={(el) => { itemRefs.current[item.level] = el }}
             onClick={() => handleClick(item.level)}
-            className={
-              isHorizontal
-                ? `flex flex-shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] transition-colors duration-150 hover:bg-[#F7F9FC] ${
-                    isActive ? 'border-blue bg-blue2' : 'border-[#EEF1F5] bg-white'
-                  }`
-                : `flex cursor-pointer justify-between rounded-lg border-b border-[#EEF1F5] px-2.5 py-2.5 text-xs transition-colors duration-150 hover:bg-[#F7F9FC] ${
-                    isActive ? 'bg-blue2' : ''
-                  }`
-            }
+            type="button"
+            className={`
+              flex w-full cursor-pointer items-center justify-between gap-3
+              rounded-lg border-2 bg-white px-3.5 py-2.5 text-[13px]
+              transition-all duration-150
+              ${
+                isActive
+                  ? 'border-[#0F2A4A] text-[#0F2A4A] font-semibold shadow-sm'
+                  : 'border-[#E4E8EF] text-[#5A6473] font-medium hover:border-[#0F2A4A]/40 hover:text-[#0F2A4A]'
+              }
+            `}
           >
-            <strong className={`font-bold ${isActive ? 'text-blue' : ''}`}>{item.label}</strong>
-            <span className={isActive ? 'text-blue' : 'text-[#8A95A5]'}>{item.value}</span>
-          </div>
+            <span>{item.label}</span>
+            <span
+              className={`
+                rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums
+                ${
+                  isActive
+                    ? 'bg-[#0F2A4A] text-white'
+                    : 'bg-[#E1E6ED] text-[#5A6473]'
+                }
+              `}
+            >
+              {item.value}
+            </span>
+          </button>
         )
       })}
     </div>

@@ -1,21 +1,30 @@
 import Button from "./Button.jsx";
 import StatCard from "./StatCard.jsx";
-import { heroStats } from "../data/sampleData.js";
+import { fmt } from "../utils.js";
 import useCountUp from "../hooks/useCountUp.js";
 
-export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
-  const villageCount = useCountUp("6,77,523", { duration: 1400 });
+const HERO_STATS = [
+  { icon: "ti-flag", key: "states_uts", label: "States & UTs" },
+  { icon: "ti-map", key: "districts", label: "Districts" },
+  { icon: "ti-map-2", key: "sub_districts", label: "Sub-Districts" },
+  {
+    icon: "ti-building",
+    key: "development_blocks",
+    label: "Development Blocks",
+  },
+];
+
+export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
+  const villageCount = useCountUp(fmt(stats?.villages), { duration: 1400 });
+
   return (
     <section className="bg-gradient-to-b from-[#F8FAFD] to-bgApp py-4 lg:py-[30px]">
       <div className="mx-auto w-full max-w-wrap px-4 sm:px-6">
-        {/* CHANGE 1: added `md:items-stretch` so from tablet/laptop up, both
-            columns match the taller one's height instead of centering independently */}
         <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1.06fr_.94fr] md:items-stretch md:gap-[54px]">
-          {/* CHANGE 4: added `flex flex-col md:justify-center` so the text content
-              is vertically centered within the stretched column height, instead of
-              sitting pinned to the top with empty space below it */}
+          {/* ─────────── LEFT: Text content ─────────── */}
           <div className="flex flex-col space-y-1 sm:space-y-2 lg:space-y-3 md:justify-center">
-            <div className="sm:w-full lg:w-full mb-1 lg:mb-[15px] inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.1em] text-blue before:h-0.5 before:w-[25px] before:bg-saffron before:content-['']">
+            {/* Eyebrow label — CHANGED: blue → navy */}
+            <div className="sm:w-full lg:w-full mb-1 lg:mb-[15px] inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.1em] text-[#0F2A4A] before:h-0.5 before:w-[25px] before:bg-saffron before:content-['']">
               India Administrative Geography
             </div>
             
@@ -35,45 +44,47 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
               information through a single, structured public-facing map data
               portal
             </p>
+
+            {/* Explore Directory button — CHANGED: navy bg + saffron text */}
             <div className="mt-[25px] flex flex-wrap gap-2.5">
-              <Button
+              <a
                 href="#directory"
-                variant="primary"
                 onClick={(e) => {
                   e.preventDefault();
                   onScrollToDirectory();
                 }}
+                className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-[#0F2A4A] px-8 py-3.5 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 focus:outline-none focus:ring-2 focus:ring-[#F2C078]/50 focus:ring-offset-2 sm:w-auto sm:px-10 sm:text-base"
               >
-                Explore Directory{" "}
-                <span className="ml-0.5 inline-block transition-transform group-hover:translate-x-1">
+                <i className="ti ti-compass text-medium" />
+                <span>Explore Directory</span>
+                <span className="inline-block transition-transform duration-200 group-hover:translate-x-1">
                   →
                 </span>
-              </Button>
+              </a>
             </div>
           </div>
 
-          {/* CHANGE 2: added `flex h-full flex-col` so this card actually fills
-              the stretched height from CHANGE 1, instead of staying at its
-              natural (shorter) content height and leaving dead space beside it */}
+          {/* ─────────── RIGHT: Snapshot card ─────────── */}
           <div className="flex h-full flex-col rounded-2xl border border-line bg-card p-[22px] shadow-card">
             <div className="mb-3.5 flex items-start justify-between">
               <div>
-                <div className="mt-1 text-[15px] font-bold tracking-[.11em] text-blue">
+                {/* CHANGED: blue → navy */}
+                <div className="mt-1 text-[15px] font-bold tracking-[.11em] text-[#0F2A4A]">
                   ADMINISTRATIVE SNAPSHOT
                 </div>
                 <h3 className="font-sans text-[18px] font-extrabold text-navy">
                   India at a glance
                 </h3>
               </div>
-              <div className="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap text-[11px] font-bold text-green">
-                {/* CHANGE: swapped the ping-ring approach for animate-pulse directly
-        on the dot — this fades its opacity 1 → 0.5 → 1 on a loop, which
-        reads as a clear, obvious blink rather than a subtle expanding ring */}
+
+              {/* Data View pill — CHANGED: green → navy + saffron */}
+              <div className="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#E8F5EE] px-2.5 py-1 text-[11px] font-bold text-green">
                 <span className="h-[7px] w-[7px] animate-pulse rounded-full bg-green shadow-[0_0_0_4px_#E8F5EE]" />
                 Data View
               </div>
             </div>
 
+            {/* Villages highlight card — kept navy gradient, saffron text */}
             <div className="flex items-center gap-3 rounded-xl bg-gradient-to-br from-navy to-navy2 p-4 text-white">
               <div className="grid h-[42px] w-[42px] flex-shrink-0 place-items-center rounded-[10px] bg-white/[.13] text-[30px] font-extrabold">
                 <i className="ti ti-building-community" />
@@ -82,6 +93,7 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
                 <div className="font-serif text-[32px] leading-[.95] sm:text-[39px]">
                   {villageCount}
                 </div>
+                {/* CHANGED: kept saffron/gold — senior said this is good */}
                 <div className="mt-[5px] text-[13px] font-extrabold text-[#F2C078]">
                   Villages
                 </div>
@@ -92,20 +104,17 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory }) {
             </div>
 
             <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-              {heroStats.map((s) => (
+              {HERO_STATS.map((s) => (
                 <StatCard
                   key={s.label}
                   icon={s.icon}
-                  value={s.value}
+                  value={fmt(stats?.[s.key])}
                   label={s.label}
                   animate
                 />
               ))}
             </div>
 
-            {/* CHANGE 3: added `mt-auto` so this footer line gets pushed to the
-                bottom of the now-taller card — the extra stretched height becomes
-                a bigger gap above this line, instead of empty space below it */}
             <div className="mt-auto flex flex-wrap justify-between gap-2.5 pt-2.5 text-[10px] text-[#7A8492]">
               <span>
                 <strong className="text-[#475467]">Source</strong> Local
