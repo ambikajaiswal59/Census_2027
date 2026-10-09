@@ -87,7 +87,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               </div>
 
               <div className="whitespace-nowrap text-[13px] text-[#e4c411] sm:text-[14px]">
-                2027 Map Data
+                Map, Apps & Data
               </div>
             </div>
           </div>
