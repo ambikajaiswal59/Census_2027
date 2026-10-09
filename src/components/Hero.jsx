@@ -31,7 +31,7 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
             <h1 className="max-w-[650px] font-serif text-[28px] font-semibold leading-[1.12] tracking-[-.025em] text-navy sm:text-[38px] lg:text-[60px]">
               <span className="block">Census India 2027</span>
 
-              <span className="block text-[24px] text-[#0F766E] sm:text-[32px] lg:text-[48px]">
+              <span className="block text-[24px] text-[#06534d] sm:text-[32px] lg:text-[45px]">
                 Map, Apps & Data
               </span>
             </h1>

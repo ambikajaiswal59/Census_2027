@@ -82,12 +82,12 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
           />
         </div>
 
-            <div className="min-w-0">
-              <div className="-mb-2 -mt-2 whitespace-nowrap text-[18px] font-extrabold text-[#e4c411] sm:text-[22px]">
+            <div className="min-w-0 ">
+              <div className="-mb-2 -mt-2 whitespace-nowrap text-[18px] font-extrabold tracking-[0.15rem] text-[#e4c411]  sm:text-[25px]">
                 ML Infomap
               </div>
 
-              <div className="whitespace-nowrap text-[13px] text-[#e4c411] sm:text-[14px]">
+              <div className="whitespace-nowrap text-[13px] tracking-[0.12rem]  text-[#e4c411] sm:text-[14px]">
                 Map, Apps & Data
               </div>
             </div>
