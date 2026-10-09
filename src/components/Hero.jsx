@@ -27,17 +27,18 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
             <div className="sm:w-full lg:w-full mb-1 lg:mb-[15px] inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.1em] text-[#0F2A4A] before:h-0.5 before:w-[25px] before:bg-saffron before:content-['']">
               India Administrative Geography
             </div>
-
+            
             <h1 className="max-w-[650px] font-serif text-[28px] font-semibold leading-[1.12] tracking-[-.025em] text-navy sm:text-[38px] lg:text-[60px]">
-              <span className="block">Unified Portal for</span>
-              <span className="block text-[#b20000]">Census 2027 Map Data</span>
-            </h1>
+              <span className="block">Census India 2027</span>
 
-            {/* Subheading — CHANGED: blue → navy (kept bold weight for emphasis) */}
-            <div className="mt-[17px] w-full text-[18px] lg:text-[25px] font-bold leading-[1.45] text-[#0F2A4A]">
+              <span className="block text-[24px] text-[#06534d] sm:text-[32px] lg:text-[45px]">
+                Map, Apps & Data
+              </span>
+            </h1>
+            <div className="mt-[17px] w-full text-[18px] font-bold leading-[1.45] text-blue lg:text-[25px]">
               Integrated geographic information from State to Village level
             </div>
-
+            
             <p className="mt-2.5 max-w-[650px] text-[10px] lg:text-[16px] leading-[1.7] text-muted">
               Explore administrative hierarchy, location records and Census 2027
               information through a single, structured public-facing map data
