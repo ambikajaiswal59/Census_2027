@@ -56,11 +56,24 @@ export default {
             opacity: "0.25",
           },
         },
+
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+
+        zoomIn: {
+          "0%": { opacity: "0", transform: "scale(0)" },
+          "60%": { opacity: "1" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
       },
 
       animation: {
         modalIn: "modalIn .22s cubic-bezier(.2,.8,.2,1)",
         blink: "blink 1.4s ease-in-out infinite",
+        fadeIn: "fadeIn .5s ease-out",
+        zoomIn: "zoomIn .6s cubic-bezier(.22,1,.36,1)",
       },
     },
   },
