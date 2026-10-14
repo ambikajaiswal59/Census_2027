@@ -9,7 +9,7 @@ export const phaseData = [
     points: [
       "India's first fully digital Census, with the nationwide exercise beginning 1 April 2026",
       "Conducted from April to September 2026",
-      "Citizens can self-enumerate via a secure online portal (se.census.gov.in) in 16 languages, generating a unique Self-Enumeration ID verified by the enumerator during their visit",
+      "Citizens can self-enumerate via a secure online portal in 16 languages, generating a unique Self-Enumeration ID verified by the enumerator during their visit",
       "Housing conditions, amenities and household assets",
       "Drinking water, sanitation, energy access and connectivity",
       "Geo-tagging and a unique ID for every structure",
