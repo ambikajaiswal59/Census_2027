@@ -2,6 +2,7 @@ import Button from "./Button.jsx";
 import StatCard from "./StatCard.jsx";
 import { fmt } from "../utils.js";
 import useCountUp from "../hooks/useCountUp.js";
+import { useNavigate } from "react-router-dom";
 
 const HERO_STATS = [
   { icon: "ti-flag", key: "states_uts", label: "States & UTs" },
@@ -15,6 +16,7 @@ const HERO_STATS = [
 ];
 
 export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
+  const navigate = useNavigate();
   const villageCount = useCountUp(fmt(stats?.villages), { duration: 1400 });
 
   return (
@@ -27,7 +29,7 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
             <div className="sm:w-full lg:w-full mb-1 lg:mb-[15px] inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.1em] text-[#0F2A4A] before:h-0.5 before:w-[25px] before:bg-saffron before:content-['']">
               India Administrative Geography
             </div>
-            
+
             <h1 className="max-w-[650px] font-serif text-[28px] font-semibold leading-[1.12] tracking-[-.025em] text-navy sm:text-[38px] lg:text-[60px]">
               <span className="block">Census India 2027</span>
 
@@ -38,7 +40,7 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
             <div className="mt-[17px] w-full text-[18px] font-bold leading-[1.45] text-blue lg:text-[25px]">
               Integrated geographic information from State to Village level
             </div>
-            
+
             <p className="mt-2.5 max-w-[650px] text-[10px] lg:text-[16px] leading-[1.7] text-muted">
               Explore administrative hierarchy, location records and Census 2027
               information through a single, structured public-facing map data
@@ -47,20 +49,19 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
 
             {/* Explore Directory button — CHANGED: navy bg + saffron text */}
             <div className="mt-[25px] flex flex-wrap gap-2.5">
-              <a
-                href="#directory"
+              <Button
+                href="/population-dashboard"
+                variant="primary"
                 onClick={(e) => {
                   e.preventDefault();
-                  onScrollToDirectory();
+                  navigate("/population-dashboard");
                 }}
-                className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-[#0F2A4A] px-8 py-3.5 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 focus:outline-none focus:ring-2 focus:ring-[#F2C078]/50 focus:ring-offset-2 sm:w-auto sm:px-10 sm:text-base"
               >
-                <i className="ti ti-compass text-medium" />
-                <span>Explore Directory</span>
-                <span className="inline-block transition-transform duration-200 group-hover:translate-x-1">
+                Explore Directory{" "}
+                <span className="ml-0.5 inline-block transition-transform group-hover:translate-x-1">
                   →
                 </span>
-              </a>
+              </Button>
             </div>
           </div>
 

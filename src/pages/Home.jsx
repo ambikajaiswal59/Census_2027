@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import Header from "../components/Header.jsx";
+import { useEffect, useRef, useState } from "react";
+
 import Hero from "../components/Hero.jsx";
 import ListPanel from "../components/ListPanel.jsx";
 import { useStats } from "../useStats.js";
@@ -7,7 +7,7 @@ import { phaseData } from "../data/phaseData.js";
 import { sourceData } from "../data/sourceData.js";
 import PhaseModal from "../components/PhaseModal.jsx";
 import DirectoryExplorer from "../components/DirectoryExplorer.jsx";
-import Footer from "../components/Footer.jsx";
+
 import useNationalStats from "../hooks/useNationalStats.js";
 
 export default function Home() {
@@ -23,7 +23,14 @@ export default function Home() {
   const censusHeadRef = useRef(null);
   const directoryHeadRef = useRef(null);
   const { data: stats, loading: statsLoading, error: statsError } = useStats();
-
+  useEffect(() => {
+    const hash = window.location.hash;
+    const timer = setTimeout(() => {
+      if (hash === "#phases") scrollToCensus();
+      else if (hash === "#directory") scrollToDirectory();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
   // ─────────────────────────────────────────────────────────
   // Smart scroll — centers short sections, top-aligns tall ones
   // ─────────────────────────────────────────────────────────
@@ -63,11 +70,6 @@ export default function Home() {
 
   return (
     <>
-      <Header
-        onScrollToCensus={scrollToCensus}
-        onScrollToDirectory={scrollToDirectory}
-      />
-
       <Hero
         onScrollToCensus={scrollToCensus}
         onScrollToDirectory={scrollToDirectory}
@@ -113,14 +115,19 @@ export default function Home() {
           </section>
 
           {/* ─────── DIRECTORY SECTION ─────── */}
-          <section id="directory" ref={directoryHeadRef} className="scroll-mt-24">
+          <section
+            id="directory"
+            ref={directoryHeadRef}
+            className="scroll-mt-24 mb-4"
+          >
             <div className="mb-4 flex flex-wrap items-end justify-between gap-5">
               <div>
                 <h2 className="font-serif text-[23px] font-semibold tracking-[-.015em] text-navy sm:text-[29px]">
                   Administrative Directory Explorer
                 </h2>
                 <div className="mt-[5px] max-w-[700px] text-[13px] leading-[1.6] text-muted">
-                  Search, explore and navigate India's administrative data from State to Village level
+                  Search, explore and navigate India's administrative data from
+                  State to Village level
                 </div>
               </div>
               <p className="m-0 text-xs text-text">
@@ -132,7 +139,7 @@ export default function Home() {
         </section>
       </main>
 
-      <Footer />
+   
 
       <PhaseModal activeItem={activeItem} onClose={() => setActiveItem(null)} />
     </>
