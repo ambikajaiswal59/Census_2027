@@ -478,7 +478,7 @@ export default function MapCard({
 
   return (
     <div
-      className={`box-border flex min-h-0 min-w-0 flex-col border border-line bg-white p-3 shadow-card sm:p-4 ${
+      className={`box-border flex min-h-0 min-w-0 flex-col border border-navy bg-white p-3 shadow-card sm:p-4 ${
         isFullscreen
           ? "fixed inset-0 z-[100] h-[100dvh] w-screen rounded-none"
           : "h-full w-full rounded-2xl"

@@ -4,7 +4,7 @@ export default function LegendCard({ ranges, visibleRangeIds, onToggleRange }) {
   const [rampOpen, setRampOpen] = useState(true);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-line bg-white p-4 shadow-card">
+    <div className="flex h-full flex-col rounded-2xl border border-navy bg-white p-4 shadow-card">
       <h3 className="mb-3 flex items-center gap-2 text-[15px] font-extrabold text-navy">
         <i className="ti ti-palette text-blue" />
         Legend

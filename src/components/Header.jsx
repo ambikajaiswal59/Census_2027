@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUpload } from "../context/UploadContext.jsx";
+import { scrollToSection } from "../utils.js";
 
 const navLinks = [
   { href: "#directory", label: "Directory", key: "directory" },
@@ -59,12 +60,29 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
 
   function handleClick(e, link) {
     e.preventDefault();
-    if (link.key === "census") {
-      onScrollToCensus ? onScrollToCensus() : navigate("/#phases");
-    } else if (link.key === "directory") {
-      onScrollToDirectory ? onScrollToDirectory() : navigate("/#directory");
-    } else if (link.external) {
+
+    if (link.external) {
       window.open(link.href, "_blank", "noreferrer");
+      return;
+    }
+
+    const sectionId = link.key === "census" ? "phases" : "directory";
+    const customScroll =
+      link.key === "census" ? onScrollToCensus : onScrollToDirectory;
+
+    if (customScroll) {
+      customScroll();
+      return;
+    }
+
+    const target = document.getElementById(sectionId);
+
+    if (target) {
+      // Already on the Home page: scroll straight to the section.
+      scrollToSection(target);
+    } else {
+      // On another page: go to Home; it reads the hash and scrolls on load.
+      navigate(`/#${sectionId}`);
     }
   }
 
@@ -193,7 +211,8 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
             gridTemplateRows: showMobileRow ? "1fr" : "0fr",
             opacity: showMobileRow ? 1 : 0,
             pointerEvents: showMobileRow ? "auto" : "none",
-            transition: "grid-template-rows 300ms ease-in-out, opacity 300ms ease-in-out",
+            transition:
+              "grid-template-rows 300ms ease-in-out, opacity 300ms ease-in-out",
           }}
           aria-hidden={!showMobileRow}
         >

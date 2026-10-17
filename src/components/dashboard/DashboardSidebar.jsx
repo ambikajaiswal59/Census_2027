@@ -95,7 +95,7 @@ export default function DashboardSidebar({
   };
 
   return (
-    <aside className="flex h-full min-h-0 flex-col rounded-2xl border border-line bg-white p-4 shadow-card">
+    <aside className="flex h-full min-h-0 flex-col rounded-2xl border border-navy bg-white p-4 shadow-card">
       <div className="relative mb-3 h-12 shrink-0 overflow-hidden rounded-full border border-line bg-white">
         <div
           className="absolute inset-y-0 left-0 w-1/2 rounded-full bg-navy shadow-[0_6px_14px_rgba(2,2,68,.35),inset_0_1px_0_rgba(255,255,255,.25)] transition-transform duration-300 ease-[cubic-bezier(.68,-0.55,.265,1.55)]"

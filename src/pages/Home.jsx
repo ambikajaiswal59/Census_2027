@@ -9,6 +9,7 @@ import PhaseModal from "../components/PhaseModal.jsx";
 import DirectoryExplorer from "../components/DirectoryExplorer.jsx";
 
 import useNationalStats from "../hooks/useNationalStats.js";
+import { scrollToSection } from "../utils.js";
 
 export default function Home() {
   const { stats: nationalStats } = useNationalStats();
@@ -28,44 +29,27 @@ export default function Home() {
     const timer = setTimeout(() => {
       if (hash === "#phases") scrollToCensus();
       else if (hash === "#directory") scrollToDirectory();
+
+      // Remove the hash once used, so a refresh doesn't jump to that section again.
+      if (hash) {
+        history.replaceState(
+          null,
+          "",
+          window.location.pathname + window.location.search,
+        );
+      }
     }, 100);
     return () => clearTimeout(timer);
   }, []);
   // ─────────────────────────────────────────────────────────
   // Smart scroll — centers short sections, top-aligns tall ones
   // ─────────────────────────────────────────────────────────
-  function scrollToSection(target, offset = 20) {
-    if (!target) return;
-    const headerHeight = document.querySelector("header")?.offsetHeight || 0;
-    const rect = target.getBoundingClientRect();
-    const sectionHeight = rect.height;
-    const viewportHeight = window.innerHeight - headerHeight;
-    const absoluteTop = rect.top + window.pageYOffset;
-
-    let scrollTop;
-    if (sectionHeight < viewportHeight * 0.7) {
-      // Short section — center it vertically in the visible area
-      scrollTop =
-        absoluteTop - headerHeight - (viewportHeight - sectionHeight) / 2;
-    } else {
-      // Tall section — align its top just below the sticky header
-      scrollTop = absoluteTop - headerHeight - offset;
-    }
-
-    window.scrollTo({
-      top: Math.max(scrollTop, 0),
-      behavior: "smooth",
-    });
-  }
-
   function scrollToCensus() {
     scrollToSection(censusHeadRef.current);
-    history.replaceState(null, "", "#phases");
   }
 
   function scrollToDirectory() {
     scrollToSection(directoryHeadRef.current);
-    history.replaceState(null, "", "#directory");
   }
 
   return (
