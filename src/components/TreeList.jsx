@@ -1,18 +1,23 @@
-import { useRef } from 'react'
+import { useRef } from "react";
 
-export default function TreeList({ items, activeLevel, onSelect, orientation = 'vertical' }) {
-  const isHorizontal = orientation === 'horizontal'
-  const itemRefs = useRef({})
+export default function TreeList({
+  items,
+  activeLevel,
+  onSelect,
+  orientation = "vertical",
+}) {
+  const isHorizontal = orientation === "horizontal";
+  const itemRefs = useRef({});
 
   function handleClick(level) {
-    onSelect(level)
-    const el = itemRefs.current[level]
+    onSelect(level);
+    const el = itemRefs.current[level];
     if (el) {
       el.scrollIntoView({
-        behavior: 'smooth',
-        inline: 'nearest',
-        block: 'nearest',
-      })
+        behavior: "smooth",
+        inline: "nearest",
+        block: "nearest",
+      });
     }
   }
 
@@ -21,23 +26,31 @@ export default function TreeList({ items, activeLevel, onSelect, orientation = '
   // ─────────────────────────────────────────────────────────
   if (isHorizontal) {
     return (
-      <div className="flex flex-wrap gap-2">
+      // Every tab is the same size and spans the bar's full width: one
+      // full-width tab per row on small screens (so an odd tab never ends up
+      // alone at half width), one equal-width column per tab from lg up.
+      <div
+        className="grid grid-cols-1 gap-2 lg:[grid-template-columns:repeat(var(--tab-count),minmax(0,1fr))]"
+        style={{ "--tab-count": items.length }}
+      >
         {items.map((item) => {
-          const isActive = item.level === activeLevel
+          const isActive = item.level === activeLevel;
           return (
             <button
               key={item.level}
-              ref={(el) => { itemRefs.current[item.level] = el }}
+              ref={(el) => {
+                itemRefs.current[item.level] = el;
+              }}
               onClick={() => handleClick(item.level)}
               type="button"
               className={`
-                flex flex-shrink-0 cursor-pointer items-center gap-2.5
+                flex w-full min-w-0 cursor-pointer items-center justify-center gap-2.5
                 whitespace-nowrap rounded-lg border-2 bg-white
-                px-4 py-2 text-[13px] transition-all duration-150
+                px-3 py-2 text-[13px] transition-all duration-150
                 ${
                   isActive
-                    ? 'border-[#0F2A4A] text-[#0F2A4A] font-semibold shadow-sm'
-                    : 'border-[#E4E8EF] text-[#5A6473] font-medium hover:border-[#0F2A4A]/40 hover:text-[#0F2A4A]'
+                    ? "border-[#0F2A4A] text-[#0F2A4A] font-semibold shadow-sm"
+                    : "border-[#E4E8EF] text-[#5A6473] font-medium hover:border-[#0F2A4A]/40 hover:text-[#0F2A4A]"
                 }
               `}
             >
@@ -47,18 +60,18 @@ export default function TreeList({ items, activeLevel, onSelect, orientation = '
                   rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums
                   ${
                     isActive
-                      ? 'bg-[#0F2A4A] text-white'
-                      : 'bg-[#E1E6ED] text-[#5A6473]'
+                      ? "bg-[#0F2A4A] text-white"
+                      : "bg-[#E1E6ED] text-[#5A6473]"
                   }
                 `}
               >
                 {item.value}
               </span>
             </button>
-          )
+          );
         })}
       </div>
-    )
+    );
   }
 
   // ─────────────────────────────────────────────────────────
@@ -67,11 +80,13 @@ export default function TreeList({ items, activeLevel, onSelect, orientation = '
   return (
     <div className="space-y-1.5">
       {items.map((item) => {
-        const isActive = item.level === activeLevel
+        const isActive = item.level === activeLevel;
         return (
           <button
             key={item.level}
-            ref={(el) => { itemRefs.current[item.level] = el }}
+            ref={(el) => {
+              itemRefs.current[item.level] = el;
+            }}
             onClick={() => handleClick(item.level)}
             type="button"
             className={`
@@ -80,8 +95,8 @@ export default function TreeList({ items, activeLevel, onSelect, orientation = '
               transition-all duration-150
               ${
                 isActive
-                  ? 'border-[#0F2A4A] text-[#0F2A4A] font-semibold shadow-sm'
-                  : 'border-[#E4E8EF] text-[#5A6473] font-medium hover:border-[#0F2A4A]/40 hover:text-[#0F2A4A]'
+                  ? "border-[#0F2A4A] text-[#0F2A4A] font-semibold shadow-sm"
+                  : "border-[#E4E8EF] text-[#5A6473] font-medium hover:border-[#0F2A4A]/40 hover:text-[#0F2A4A]"
               }
             `}
           >
@@ -91,16 +106,16 @@ export default function TreeList({ items, activeLevel, onSelect, orientation = '
                 rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums
                 ${
                   isActive
-                    ? 'bg-[#0F2A4A] text-white'
-                    : 'bg-[#E1E6ED] text-[#5A6473]'
+                    ? "bg-[#0F2A4A] text-white"
+                    : "bg-[#E1E6ED] text-[#5A6473]"
                 }
               `}
             >
               {item.value}
             </span>
           </button>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

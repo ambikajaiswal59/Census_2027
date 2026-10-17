@@ -22,22 +22,7 @@ export default function DashboardSidebar({
     { value: "District", icon: "ti-map-pin" },
   ];
 
-  const { uploadedData, selectedUploadColumn, setSelectedUploadColumn } =
-    useUpload();
-
-  // Column 0 (State / UT) is only a backend reference used later to match
-  // rows to the map — it's never shown as a dataset option. Columns 1-3
-  // (Dataset 1/2/3) show up as options, but only when that column actually
-  // has a value somewhere (per the TL's note: empty columns stay hidden).
-  const uploadedParameterColumns = uploadedData
-    ? uploadedData.columns
-        .map((heading, index) => ({ heading, index }))
-        .filter(
-          ({ index }) =>
-            index > 0 &&
-            uploadedData.rows.some((row) => String(row[index] ?? "").trim()),
-        )
-    : [];
+  const { uploadsByLevel, selectedUpload, setSelectedUpload } = useUpload();
 
   // UI state: updates instantly on click, independent of map loading
   const [uiLevel, setUiLevel] = useState(level);
@@ -46,6 +31,24 @@ export default function DashboardSidebar({
   useEffect(() => {
     setUiLevel(level);
   }, [level]);
+
+  // Each level has its own upload (State / UT sheet, District sheet).
+  const uploadedData = uploadsByLevel[uiLevel] ?? null;
+
+  // The leading key columns (State / UT, or State / UT + District) are only
+  // backend references used to match rows to the map/table — never shown as
+  // dataset options. Every column after them (Dataset 1/2/3) shows up as an
+  // option, but only when that column actually has a value somewhere (per
+  // the TL's note: empty columns stay hidden).
+  const uploadedParameterColumns = uploadedData
+    ? uploadedData.columns
+        .map((heading, index) => ({ heading, index }))
+        .filter(
+          ({ index }) =>
+            index >= uploadedData.keyColumns &&
+            uploadedData.rows.some((row) => String(row[index] ?? "").trim()),
+        )
+    : [];
 
   // Height the list is capped at so exactly VISIBLE_PARAMS rows are visible.
   // Measured from the real rows, so wrapped labels don't break it.
@@ -158,10 +161,15 @@ export default function DashboardSidebar({
               >
                 <input
                   type="radio"
-                  name="population-parameter"
+                  name="dashboard-parameter"
                   value={p.key}
                   checked={isSelected}
-                  onChange={() => onParamChange(p.key)}
+                  onChange={() => {
+                    // Only one field can be active at a time across both
+                    // lists: picking a Parameter clears the Customer Input pick.
+                    setSelectedUpload(null);
+                    onParamChange(p.key);
+                  }}
                   className="sr-only"
                 />
                 <span
@@ -197,7 +205,9 @@ export default function DashboardSidebar({
             uploadedParameterColumns.length > 0 ? (
               <div className="mt-1 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pr-1 [scrollbar-color:#C7CEDA_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#C7CEDA] [&::-webkit-scrollbar-thumb:hover]:bg-[#9AA6B8] [&::-webkit-scrollbar-track]:bg-transparent">
                 {uploadedParameterColumns.map(({ heading, index }) => {
-                  const isSelected = selectedUploadColumn === index;
+                  const isSelected =
+                    selectedUpload?.level === uiLevel &&
+                    selectedUpload.index === index;
 
                   return (
                     <label
@@ -210,10 +220,15 @@ export default function DashboardSidebar({
                     >
                       <input
                         type="radio"
-                        name="uploaded-parameter"
-                        value={index}
+                        name="dashboard-parameter"
+                        value={`upload-${index}`}
                         checked={isSelected}
-                        onChange={() => setSelectedUploadColumn(index)}
+                        onChange={() => {
+                          // Picking a Customer Input dataset clears the
+                          // Parameters pick (single selection overall).
+                          onParamChange(null);
+                          setSelectedUpload({ level: uiLevel, index });
+                        }}
                         className="sr-only"
                       />
                       <span

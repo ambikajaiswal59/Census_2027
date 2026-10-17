@@ -19,9 +19,19 @@ export default function PopulationDashboard() {
   // Shows the Upload button in the header while this page is open.
   useEnableUpload();
 
-  const { uploadedData, selectedUploadColumn } = useUpload();
+  const {
+    uploadsByLevel,
+    selectedUpload,
+    setSelectedUpload,
+    setDashboardLevel,
+  } = useUpload();
 
   const [level, setLevel] = useState(levelOptions[0]);
+
+  // Let the upload modal default to the level the dashboard is showing.
+  useEffect(() => {
+    setDashboardLevel(level);
+  }, [level, setDashboardLevel]);
   const [activeParam, setActiveParam] = useState("total_population");
 
   // Row clicked in the table; the map zooms to it.
@@ -40,9 +50,23 @@ export default function PopulationDashboard() {
     ranges.map((range) => range.id),
   );
 
-  const activeParamLabel =
-    parameters.find((parameter) => parameter.key === activeParam)?.label ||
-    "Population";
+  // A Customer Input pick belongs to one level. If the dashboard moves to the
+  // other level, drop it so only one field is ever active.
+  useEffect(() => {
+    if (selectedUpload && selectedUpload.level !== level) {
+      setSelectedUpload(null);
+    }
+  }, [level, selectedUpload, setSelectedUpload]);
+
+  // activeParam is null while a Customer Input dataset is the active choice
+  // (only one field is selected at a time across both sidebar lists).
+  // If neither is selected any more (level switched, sheet replaced), go
+  // back to the default Parameter.
+  useEffect(() => {
+    if (activeParam === null && !selectedUpload) {
+      setActiveParam("total_population");
+    }
+  }, [activeParam, selectedUpload]);
 
   // Clear the selection when switching between State / UT and District.
   useEffect(() => {
@@ -66,19 +90,30 @@ export default function PopulationDashboard() {
       ? `${selectedRow.state}-${selectedRow.district}`
       : selectedRow.state;
 
-  // The uploaded Customer Input dataset currently picked in the sidebar,
-  // reshaped as { heading, rows: [{ name, value }] } keyed by State / UT
-  // name (column 0 of the sheet) so the table and map can match it later.
+  // The uploaded Customer Input dataset currently picked in the sidebar, for
+  // the level being shown, reshaped as
+  //   { heading, rows: [{ state, district?, value }] }
+  // State / UT sheet:  column 0 = state.
+  // District sheet:    column 0 = state, column 1 = district.
+  // so the table (and the map later) can match it by name.
+  const levelUpload = uploadsByLevel[level] ?? null;
   const uploadedColumn =
-    uploadedData && selectedUploadColumn != null
+    levelUpload && selectedUpload?.level === level
       ? {
-          heading: uploadedData.columns[selectedUploadColumn],
-          rows: uploadedData.rows.map((row) => ({
-            name: row[0],
-            value: row[selectedUploadColumn],
+          heading: levelUpload.columns[selectedUpload.index],
+          rows: levelUpload.rows.map((row) => ({
+            state: row[0],
+            district: level === "District" ? row[1] : undefined,
+            value: row[selectedUpload.index],
           })),
         }
       : null;
+
+  // Title/legend label follows whichever single field is active.
+  const activeParamLabel = uploadedColumn
+    ? uploadedColumn.heading
+    : parameters.find((parameter) => parameter.key === activeParam)?.label ||
+      "Population";
 
   return (
     <>

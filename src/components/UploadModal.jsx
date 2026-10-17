@@ -1,29 +1,36 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import * as XLSX from "xlsx";
-import { useUpload } from "../context/UploadContext.jsx";
+import {
+  useUpload,
+  UPLOAD_LEVELS,
+  STATE_LEVEL,
+  DISTRICT_LEVEL,
+} from "../context/UploadContext.jsx";
 
-const REQUIRED_COLUMNS = 4;
 const MAX_SIZE_MB = 5;
 const MAX_ROWS = 10000;
 const ACCEPTED_EXTENSIONS = [".xlsx", ".xls", ".csv"];
 
-// The 4 headings the downloadable template ships with. Column 1 (State / UT)
-// is only a backend reference used later to match rows to the map — it is
-// never shown as a selectable dataset in the UI. Columns 2-4 are the user's
-// own data and show up as selectable parameters after upload.
-const TEMPLATE_COLUMNS = ["State / UT", "Dataset 1", "Dataset 2", "Dataset 3"];
-const TEMPLATE_SAMPLE_ROW = ["Uttar Pradesh", "", "", ""];
+const LEVEL_TABS = [
+  { value: STATE_LEVEL, icon: "ti-map" },
+  { value: DISTRICT_LEVEL, icon: "ti-map-pin" },
+];
 
-function downloadTemplate() {
+// State / UT sheet: State / UT + Dataset 1-3.
+// District sheet:  State / UT + District + Dataset 1-3.
+// The leading key columns are only backend references used to match rows to
+// the map/table — they're never shown as selectable datasets in the UI.
+function downloadTemplate(level) {
+  const config = UPLOAD_LEVELS[level];
   const worksheet = XLSX.utils.aoa_to_sheet([
-    TEMPLATE_COLUMNS,
-    TEMPLATE_SAMPLE_ROW,
+    config.templateColumns,
+    config.templateSampleRow,
   ]);
   const workbook = XLSX.utils.book_new();
 
   XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
-  XLSX.writeFile(workbook, "upload-template.xlsx");
+  XLSX.writeFile(workbook, config.templateFileName);
 }
 
 function lastFilledIndex(row) {
@@ -33,9 +40,12 @@ function lastFilledIndex(row) {
   return -1;
 }
 
-// Reads the first sheet and returns { fileName, columns, rows }.
+// Reads the first sheet and returns { level, keyColumns, fileName, columns, rows }.
 // Throws an Error with a friendly message when the file isn't valid.
-async function parseSheet(file) {
+async function parseSheet(file, level) {
+  const config = UPLOAD_LEVELS[level];
+  const REQUIRED_COLUMNS = config.templateColumns.length;
+
   const dot = file.name.lastIndexOf(".");
   const extension = dot >= 0 ? file.name.slice(dot).toLowerCase() : "";
 
@@ -86,7 +96,7 @@ async function parseSheet(file) {
 
   if (columns.some((heading) => !heading)) {
     throw new Error(
-      "The first row must contain a heading for each of the 3 columns.",
+      `The first row must contain a heading for each of the ${REQUIRED_COLUMNS} columns.`,
     );
   }
 
@@ -109,25 +119,34 @@ async function parseSheet(file) {
     );
   }
 
-  return { fileName: file.name, columns, rows };
+  return {
+    level,
+    keyColumns: config.keyColumns,
+    fileName: file.name,
+    columns,
+    rows,
+  };
 }
 
 export default function UploadModal() {
-  const { isModalOpen, closeModal, setUploadedData } = useUpload();
+  const { isModalOpen, closeModal, setUploadedData, dashboardLevel } =
+    useUpload();
 
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [error, setError] = useState("");
+  const [uploadLevel, setUploadLevel] = useState(dashboardLevel);
 
-  // Start clean every time the modal opens.
+  // Start clean every time the modal opens, on the level the dashboard is showing.
   useEffect(() => {
     if (isModalOpen) {
       setError("");
       setIsDragging(false);
       setIsParsing(false);
+      setUploadLevel(dashboardLevel);
     }
-  }, [isModalOpen]);
+  }, [isModalOpen, dashboardLevel]);
 
   // Esc closes the modal.
   useEffect(() => {
@@ -148,7 +167,7 @@ export default function UploadModal() {
     setIsParsing(true);
 
     try {
-      const data = await parseSheet(file);
+      const data = await parseSheet(file, uploadLevel);
       setUploadedData(data);
       closeModal();
     } catch (err) {
@@ -208,6 +227,36 @@ export default function UploadModal() {
 
         {/* Body */}
         <div className="p-4">
+          {/* Which level this upload is for: decides the template + sheet shape */}
+          <div
+            role="radiogroup"
+            aria-label="Upload level"
+            className="mb-3 grid grid-cols-2 gap-1 rounded-full border border-line bg-soft p-1"
+          >
+            {LEVEL_TABS.map((tab) => {
+              const isActive = uploadLevel === tab.value;
+
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={isActive}
+                  onClick={() => {
+                    setUploadLevel(tab.value);
+                    setError("");
+                  }}
+                  className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold transition-colors duration-150 ${
+                    isActive ? "bg-navy text-white" : "text-navy hover:bg-white"
+                  }`}
+                >
+                  <i className={`ti ${tab.icon}`} />
+                  {tab.value}
+                </button>
+              );
+            })}
+          </div>
+
           {/* Step 1: download the template */}
           <div className="mb-3 flex items-start gap-3 rounded-xl border border-line bg-soft p-3">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-bold text-white">
@@ -219,14 +268,15 @@ export default function UploadModal() {
                 Download the template
               </p>
               <p className="mt-0.5 text-[11px] leading-snug text-muted">
-                It has 3 columns — fill in your data under each heading, then
-                upload the completed file below.
+                {uploadLevel === DISTRICT_LEVEL
+                  ? "State / UT and District identify each row; fill in Dataset 1-3 next to them, then upload the completed file below."
+                  : "State / UT identifies each row; fill in Dataset 1-3 next to it, then upload the completed file below."}
               </p>
             </div>
 
             <button
               type="button"
-              onClick={downloadTemplate}
+              onClick={() => downloadTemplate(uploadLevel)}
               className="flex shrink-0 items-center gap-1.5 rounded-[9px] border border-line bg-white px-2.5 py-1.5 text-[12px] font-semibold text-navy hover:bg-soft"
             >
               <i className="ti ti-download" />

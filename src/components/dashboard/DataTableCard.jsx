@@ -19,20 +19,29 @@ export default function DataTableCard({
 
   const isDistrict = level === "District";
 
-  // The uploaded sheet only has one row per State / UT, so this extra
-  // column is only meaningful in State / UT view.
-  const showUploadedColumn = Boolean(uploadedColumn) && !isDistrict;
+  // The page only passes an uploaded column that belongs to the level being
+  // shown, so it can be displayed in both State / UT and District views.
+  const showUploadedColumn = Boolean(uploadedColumn);
 
-  const uploadedValueByState = useMemo(() => {
+  // State / UT view matches rows by state name; District view by
+  // state + district (district names repeat across states).
+  function uploadedKey(state, district) {
+    return isDistrict
+      ? `${normalizeName(state)}|${normalizeName(district)}`
+      : normalizeName(state);
+  }
+
+  const uploadedValueByKey = useMemo(() => {
     if (!showUploadedColumn) return {};
 
     const map = {};
-    uploadedColumn.rows.forEach(({ name, value }) => {
-      const key = normalizeName(name);
-      if (key) map[key] = value;
+    uploadedColumn.rows.forEach(({ state, district, value }) => {
+      const key = uploadedKey(state, district);
+      if (normalizeName(state)) map[key] = value;
     });
     return map;
-  }, [showUploadedColumn, uploadedColumn]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showUploadedColumn, uploadedColumn, isDistrict]);
 
   // Clear the previous search when changing levels.
   useEffect(() => {
@@ -59,24 +68,27 @@ export default function DataTableCard({
     });
   }, [data, query, isDistrict]);
 
-  // Only show: #, location column(s), the active Parameter, and the
-  // selected Customer Input dataset (if any) — nothing else.
+  // Only one field is active at a time: either a built-in Parameter or an
+  // uploaded Customer Input dataset. Show just that one data column.
+  const showParamColumn = !uploadedColumn && Boolean(activeParamKey);
+
   const columns = [
     "#",
     ...(isDistrict ? ["District", "State / UT"] : ["State / UT"]),
-    activeParamLabel || "Parameter",
+    ...(showParamColumn ? [activeParamLabel || "Parameter"] : []),
     ...(showUploadedColumn ? [uploadedColumn.heading] : []),
     "",
   ];
 
   // Header and body are separate tables, so they share fixed column widths (%).
+  const hasDataColumn = showParamColumn || showUploadedColumn;
   const widths = isDistrict
-    ? showUploadedColumn
-      ? [5, 20, 20, 24, 24, 7]
-      : [5, 24, 24, 40, 7]
-    : showUploadedColumn
-      ? [5, 32, 28, 28, 7]
-      : [5, 44, 44, 7];
+    ? hasDataColumn
+      ? [5, 24, 24, 40, 7]
+      : [5, 44, 44, 7]
+    : hasDataColumn
+      ? [5, 44, 44, 7]
+      : [5, 88, 7];
 
   const colGroup = (
     <colgroup>
@@ -198,20 +210,20 @@ export default function DataTableCard({
                           className="truncate whitespace-nowrap border-b border-[#EDF0F4] p-2.5"
                           title={(isDistrict ? row.state : name) || undefined}
                         >
-                          {isDistrict ? (
-                            row.state || "—"
-                          ) : (
-                            <b>{name || "—"}</b>
-                          )}
+                          {isDistrict ? row.state || "—" : <b>{name || "—"}</b>}
                         </td>
 
-                        <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 font-mono text-blue">
-                          {formatIN(row[activeParamKey])}
-                        </td>
+                        {showParamColumn && (
+                          <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 font-mono text-blue">
+                            {formatIN(row[activeParamKey])}
+                          </td>
+                        )}
 
                         {showUploadedColumn && (
                           <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 font-mono text-blue">
-                            {uploadedValueByState[normalizeName(name)] ?? "—"}
+                            {uploadedValueByKey[
+                              uploadedKey(row.state, row.district)
+                            ] || "—"}
                           </td>
                         )}
 
