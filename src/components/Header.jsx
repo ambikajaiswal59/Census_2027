@@ -128,9 +128,9 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               className="
             whitespace-nowrap
             rounded-lg
-            border border-[#F2C078]
+            border border-[#e4c411]
             px-2 py-1.5
-            text-[11px] font-semibold text-[#F2C078]
+            text-[11px] font-semibold text-[#e4c411]
             transition-all duration-200 ease-in-out
 
             hover:bg-gradient-to-r
