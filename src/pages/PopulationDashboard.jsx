@@ -131,7 +131,7 @@ export default function PopulationDashboard() {
             className="
               min-h-0 min-w-0
               max-h-[420px] overflow-y-auto
-              lg:col-start-1 lg:row-start-1
+              lg:col-start-1 lg:row-start-1 lg:row-span-2
               lg:h-full lg:max-h-none
             "
           >
@@ -171,7 +171,7 @@ export default function PopulationDashboard() {
             className="
               min-h-0 min-w-0
               max-h-[320px] overflow-y-auto
-              lg:col-start-3 lg:row-start-1
+              lg:col-start-3 lg:row-start-1 lg:row-span-2
               lg:h-full lg:max-h-none
             "
           >
@@ -185,8 +185,8 @@ export default function PopulationDashboard() {
           {/* Data table: full dashboard width */}
           <section
             className="
-              min-h-[260px] min-w-0
-              lg:col-span-3 lg:row-start-2
+              min-h-[260px] min-w-0 lg:col-start-2 lg:col-end-2
+              lg:col-span-2 lg:row-start-2
               lg:h-full lg:min-h-0
             "
           >

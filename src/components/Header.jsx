@@ -71,9 +71,13 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
   return (
     // Not sticky any more: Layout keeps the header on top and scrolls the area below it.
     <header className="relative z-20 w-full shrink-0 bg-navy shadow-[0_3px_18px_rgba(0,0,0,.13)]">
-      <div className="mx-auto w-full max-w-wrap px-4 sm:px-6">
-        <nav className="flex min-h-[62px] sm:min-h-[70px] items-center justify-between gap-2 py-2 sm:py-0">
-          <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
+      <div className="mx-auto w-full max-w-wrap px-3 sm:px-6">
+        <nav className="flex min-h-[62px] items-center justify-between gap-2 py-2 sm:min-h-[70px] sm:py-0">
+          {/* Logo + name: shrinks (never pushes the buttons off-screen) on small phones */}
+          <Link
+            to="/"
+            className="flex min-w-0 shrink items-center gap-2 sm:gap-3"
+          >
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center sm:h-[60px] sm:w-[60px]">
               <img
                 src="/images/ML_Info_Icon.png"
@@ -82,16 +86,17 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               />
             </div>
             <div className="min-w-0">
-              <div className="-mb-2 -mt-2 whitespace-nowrap text-[18px] font-extrabold text-[#e4c411] sm:text-[22px] tracking-widest ">
+              {/* Letter spacing is tighter on phones so the name fits next to the buttons */}
+              <div className="-mb-2 -mt-2 whitespace-nowrap text-[16px] font-extrabold tracking-wider text-[#e4c411] min-[400px]:text-[18px] sm:text-[22px] sm:tracking-widest">
                 ML Infomap
               </div>
-              <div className="whitespace-nowrap tracking-widest text-[13px] text-[#e4c411] sm:text-[14px]">
+              <div className="whitespace-nowrap text-[10px] tracking-wide text-[#e4c411] min-[400px]:text-[12px] sm:text-[14px] sm:tracking-widest">
                 Maps, Apps &amp; Data
               </div>
             </div>
           </Link>
 
-          <div className="flex flex-shrink-0 items-center gap-5">
+          <div className="flex flex-shrink-0 items-center gap-2 sm:gap-5">
             <div className="hidden items-center gap-6 md:flex">
               {navLinks.map((link) => (
                 <a
@@ -112,7 +117,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
                 onClick={openModal}
                 aria-label="Upload Excel sheet"
                 title="Upload Excel sheet"
-                className="flex items-center gap-1.5 whitespace-nowrap rounded-[7px] border border-white/30 bg-white/5 px-2.5 py-1.5 text-[12px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 active:translate-y-0 active:scale-95 motion-reduce:transform-none sm:px-3.5 sm:py-2 sm:text-[15px]"
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-[7px] border border-white/30 bg-white/5 px-2 py-1.5 text-[12px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 active:translate-y-0 active:scale-95 motion-reduce:transform-none sm:px-3.5 sm:py-2 sm:text-[15px]"
               >
                 <i className="ti ti-upload" />
                 <span className="hidden sm:inline">Upload</span>
@@ -124,8 +129,8 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
             whitespace-nowrap
             rounded-lg
             border border-[#F2C078]
-            px-3 py-1.5
-            text-[12px] font-semibold text-[#F2C078]
+            px-2 py-1.5
+            text-[11px] font-semibold text-[#F2C078]
             transition-all duration-200 ease-in-out
 
             hover:bg-gradient-to-r
@@ -136,6 +141,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
 
             active:scale-[0.97]
 
+            min-[400px]:px-3 min-[400px]:text-[12px]
             sm:px-4 sm:py-2 sm:text-[14px]
             lg:px-5 lg:py-2.5 lg:text-[15px]
           "
@@ -143,7 +149,8 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               target="_blank"
               rel="noreferrer"
             >
-              Aaj Ka Bharat &#8599;
+              Aaj Ka Bharat
+              <span className="hidden min-[400px]:inline">&nbsp;&#8599;</span>
             </a>
 
             {/* Admin dropdown — hardcoded placeholder menu for now */}
@@ -179,24 +186,32 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
           </div>
         </nav>
 
+        {/* Collapses its height (not just its opacity) so no empty space is left behind */}
         <div
-          className="flex items-center justify-between border-t border-white/10 py-2.5 md:hidden"
+          className="grid md:hidden"
           style={{
+            gridTemplateRows: showMobileRow ? "1fr" : "0fr",
             opacity: showMobileRow ? 1 : 0,
             pointerEvents: showMobileRow ? "auto" : "none",
-            transition: "opacity 300ms ease-in-out",
+            transition: "grid-template-rows 300ms ease-in-out, opacity 300ms ease-in-out",
           }}
+          aria-hidden={!showMobileRow}
         >
-          {navLinks.map((link) => (
-            <a
-              key={link.key}
-              href={link.href}
-              onClick={(e) => handleClick(e, link)}
-              className="px-1 text-sm text-[#C4D0DF] hover:text-white"
-            >
-              {link.label}
-            </a>
-          ))}
+          <div className="min-h-0 overflow-hidden">
+            <div className="flex items-center justify-between border-t border-white/10 py-2.5">
+              {navLinks.map((link) => (
+                <a
+                  key={link.key}
+                  href={link.href}
+                  onClick={(e) => handleClick(e, link)}
+                  tabIndex={showMobileRow ? 0 : -1}
+                  className="px-1 text-sm text-[#C4D0DF] hover:text-white"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </header>
