@@ -82,10 +82,10 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               />
             </div>
             <div className="min-w-0">
-              <div className="-mb-2 -mt-2 whitespace-nowrap text-[18px] font-extrabold text-[#e4c411] sm:text-[22px] ">
+              <div className="-mb-2 -mt-2 whitespace-nowrap text-[18px] font-extrabold text-[#e4c411] sm:text-[22px] tracking-widest ">
                 ML Infomap
               </div>
-              <div className="whitespace-nowrap text-[13px] text-[#e4c411] sm:text-[14px]">
+              <div className="whitespace-nowrap tracking-widest text-[13px] text-[#e4c411] sm:text-[14px]">
                 Maps, Apps &amp; Data
               </div>
             </div>
@@ -120,7 +120,25 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
             )}
 
             <a
-              className="whitespace-nowrap rounded-[7px] border border-[#e4c411] px-2.5 py-1.5 text-[12px] text-[#e4c411] sm:px-3.5 sm:py-2 sm:text-[15px]"
+              className="
+            whitespace-nowrap
+            rounded-lg
+            border border-[#F2C078]
+            px-3 py-1.5
+            text-[12px] font-semibold text-[#F2C078]
+            transition-all duration-200 ease-in-out
+
+            hover:bg-gradient-to-r
+            hover:from-[#F2C078]
+            hover:to-[#F5D84A]
+            hover:text-[#071b36]
+            hover:shadow-[0_0_14px_rgba(242,192,120,0.3)]
+
+            active:scale-[0.97]
+
+            sm:px-4 sm:py-2 sm:text-[14px]
+            lg:px-5 lg:py-2.5 lg:text-[15px]
+          "
               href="https://aajkabharatweb.com/"
               target="_blank"
               rel="noreferrer"
