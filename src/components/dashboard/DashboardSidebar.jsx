@@ -1,4 +1,5 @@
 import {
+  Fragment,
   useState,
   useEffect,
   useLayoutEffect,
@@ -6,9 +7,11 @@ import {
   startTransition,
 } from "react";
 import { useUpload } from "../../context/UploadContext.jsx";
+import useLevelCount from "../../hooks/useLevelCount.js";
+import CountCard from "./CountCard.jsx";
 
 // Parameters shown before the list starts scrolling (Total ... ST Population).
-const VISIBLE_PARAMS = 5;
+const VISIBLE_PARAMS = 6; // a group heading + 5 rows
 
 export default function DashboardSidebar({
   level,
@@ -26,6 +29,9 @@ export default function DashboardSidebar({
 
   // UI state: updates instantly on click, independent of map loading
   const [uiLevel, setUiLevel] = useState(level);
+
+  // Card count: has its own loading, separate from the table / map data.
+  const levelCount = useLevelCount(uiLevel);
 
   // Keep in sync if the parent changes level from elsewhere
   useEffect(() => {
@@ -95,7 +101,7 @@ export default function DashboardSidebar({
   };
 
   return (
-    <aside className="flex h-full min-h-0 flex-col rounded-2xl border border-navy bg-white p-4 shadow-card">
+    <aside className="flex min-h-0 flex-col rounded-2xl border border-navy bg-white p-3 shadow-card sm:p-4 lg:h-full">
       <div className="relative mb-3 h-12 shrink-0 overflow-hidden rounded-full border border-line bg-white">
         <div
           className="absolute inset-y-0 left-0 w-1/2 rounded-full bg-navy shadow-[0_6px_14px_rgba(2,2,68,.35),inset_0_1px_0_rgba(255,255,255,.25)] transition-transform duration-300 ease-[cubic-bezier(.68,-0.55,.265,1.55)]"
@@ -136,7 +142,7 @@ export default function DashboardSidebar({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-col lg:flex-1">
         <h3 className="mb-1 flex shrink-0 items-center gap-1.5 text-[13px] font-extrabold text-navy">
           <i className="ti ti-adjustments-horizontal text-blue" />
           Parameters
@@ -147,52 +153,67 @@ export default function DashboardSidebar({
           style={listMaxHeight ? { maxHeight: listMaxHeight } : undefined}
           className="relative min-h-0 overflow-y-auto overscroll-contain px-1 py-1 [scrollbar-color:#C7CEDA_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#C7CEDA] [&::-webkit-scrollbar-thumb:hover]:bg-[#9AA6B8] [&::-webkit-scrollbar-track]:bg-transparent"
         >
-          {parameters.map((p) => {
+          {parameters.map((p, index) => {
             const isSelected = activeParam === p.key;
+            // Parameters come in groups (Total / Rural / Urban): show the
+            // group name once, above its first row.
+            const showGroup =
+              p.group && p.group !== parameters[index - 1]?.group;
 
             return (
-              <label
-                key={p.key}
-                className={`group mb-1.5 flex cursor-pointer items-center rounded-full py-2 pl-2 pr-3 text-[13px] font-medium text-navy transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
-                  isSelected
-                    ? "-translate-y-px bg-[#DEDEF0] shadow-[0_6px_16px_rgba(2,2,68,.16),inset_0_1px_0_rgba(255,255,255,.7)]"
-                    : "bg-transparent hover:bg-[#EEEEF8]"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="dashboard-parameter"
-                  value={p.key}
-                  checked={isSelected}
-                  onChange={() => {
-                    // Only one field can be active at a time across both
-                    // lists: picking a Parameter clears the Customer Input pick.
-                    setSelectedUpload(null);
-                    onParamChange(p.key);
-                  }}
-                  className="sr-only"
-                />
-                <span
-                  className={`mr-3 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-4 bg-white transition-all duration-200 motion-reduce:transition-none ${
+              <Fragment key={p.key}>
+                {showGroup && (
+                  <div className="sticky top-0 z-10 -mx-1 mb-1 bg-white px-3 pb-0.5 pt-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-blue">
+                    {p.group}
+                  </div>
+                )}
+                <label
+                  className={`group mb-1.5 flex cursor-pointer items-center rounded-full py-2 pl-2 pr-3 text-[13px] font-medium text-navy transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
                     isSelected
-                      ? "scale-110 border-[#020244] shadow-[0_4px_12px_rgba(2,2,68,.35)]"
-                      : "border-[#777777] group-hover:scale-110 group-hover:border-[#020244]"
+                      ? "-translate-y-px bg-[#DEDEF0] shadow-[0_6px_16px_rgba(2,2,68,.16),inset_0_1px_0_rgba(255,255,255,.7)]"
+                      : "bg-transparent hover:bg-[#EEEEF8]"
                   }`}
                 >
-                  <span
-                    className={`h-[8px] w-[8px] rounded-full bg-white transition-transform duration-300 ease-[cubic-bezier(.34,1.56,.64,1)] motion-reduce:transition-none ${
-                      isSelected ? "scale-100" : "scale-0"
-                    }`}
+                  <input
+                    type="radio"
+                    name="dashboard-parameter"
+                    value={p.key}
+                    checked={isSelected}
+                    onChange={() => {
+                      // Only one field can be active at a time across both
+                      // lists: picking a Parameter clears the Customer Input pick.
+                      setSelectedUpload(null);
+                      onParamChange(p.key);
+                    }}
+                    className="sr-only"
                   />
-                </span>
+                  <span
+                    className={`mr-3 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-4 bg-white transition-all duration-200 motion-reduce:transition-none ${
+                      isSelected
+                        ? "scale-110 border-[#020244] shadow-[0_4px_12px_rgba(2,2,68,.35)]"
+                        : "border-[#777777] group-hover:scale-110 group-hover:border-[#020244]"
+                    }`}
+                  >
+                    <span
+                      className={`h-[8px] w-[8px] rounded-full bg-white transition-transform duration-300 ease-[cubic-bezier(.34,1.56,.64,1)] motion-reduce:transition-none ${
+                        isSelected ? "scale-100" : "scale-0"
+                      }`}
+                    />
+                  </span>
 
-                <span className="min-w-0 break-words">{p.label}</span>
-              </label>
+                  <span
+                    className="min-w-0 flex-1 whitespace-nowrap text-[12px]"
+                    title={p.shortLabel || p.label}
+                  >
+                    {p.shortLabel || p.label}
+                  </span>
+                </label>
+              </Fragment>
             );
           })}
         </div>
 
-        <div className="mt-0 flex min-h-0 flex-1 flex-col border-t border-line pt-1">
+        <div className="mt-0 flex min-h-0 flex-col border-t border-line pt-1 lg:flex-1">
           <h3 className="mb-0 flex shrink-0 items-center gap-0 text-[13px] font-extrabold text-navy">
             <i className="ti ti-adjustments-horizontal text-blue" />
             Customer Input
@@ -262,6 +283,15 @@ export default function DashboardSidebar({
               Use <b>Upload</b> in the header to add an Excel sheet
             </p>
           )}
+
+          {/* Count for the level currently shown (State / UT or District) */}
+          <div className="shrink-0 border-t border-line pb-1 pt-1">
+            <CountCard
+              value={levelCount}
+              label={uiLevel === "District" ? "Districts" : "States / UTs"}
+              icon={uiLevel === "District" ? "ti-map-pin" : "ti-map"}
+            />
+          </div>
         </div>
       </div>
     </aside>

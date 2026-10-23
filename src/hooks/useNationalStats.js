@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import { getLatestStats } from "../api/census.js";
 
-export default function useNationalStats() {
+// Remembered for the session, so pages that show the stats again get them
+// instantly instead of waiting for another request.
+let cachedStats = null;
 
-  const [stats, setStats] = useState(null);
+export default function useNationalStats() {
+  const [stats, setStats] = useState(cachedStats);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
     getLatestStats(controller.signal)
-      .then(setStats)
+      .then((res) => {
+        cachedStats = res;
+        setStats(res);
+      })
       .catch((err) => {
         if (err.name !== "AbortError") setError(err.message);
       });

@@ -8,6 +8,7 @@ function normalizeName(name = "") {
 export default function DataTableCard({
   data = [],
   level = "State / UT",
+  loading = false, // true while the full State / District list is being fetched
   onRowClick, // called with the clicked row: { state, district?, ... }
   selectedKey, // key of the row currently shown on the map (highlighted here)
   activeParamKey, // key of the selected built-in Parameter, e.g. "total_population"
@@ -72,10 +73,30 @@ export default function DataTableCard({
   // uploaded Customer Input dataset. Show just that one data column.
   const showParamColumn = !uploadedColumn && Boolean(activeParamKey);
 
+  // Each row's share of the selected parameter's total across every state / district
+  // (the full list, not just the rows left after a search).
+  const paramTotal = useMemo(() => {
+    if (!showParamColumn) return 0;
+
+    return data.reduce((sum, row) => {
+      const v = Number(row?.[activeParamKey]);
+      return Number.isFinite(v) ? sum + v : sum;
+    }, 0);
+  }, [data, activeParamKey, showParamColumn]);
+
+  function percentOf(value) {
+    const v = Number(value);
+
+    if (value === null || value === "" || !Number.isFinite(v) || !paramTotal)
+      return "—";
+
+    return `${((v / paramTotal) * 100).toFixed(2)}%`;
+  }
+
   const columns = [
     "#",
     ...(isDistrict ? ["District", "State / UT"] : ["State / UT"]),
-    ...(showParamColumn ? [activeParamLabel || "Parameter"] : []),
+    ...(showParamColumn ? [activeParamLabel || "Parameter", "% of Total"] : []),
     ...(showUploadedColumn ? [uploadedColumn.heading] : []),
     "",
   ];
@@ -83,12 +104,16 @@ export default function DataTableCard({
   // Header and body are separate tables, so they share fixed column widths (%).
   const hasDataColumn = showParamColumn || showUploadedColumn;
   const widths = isDistrict
-    ? hasDataColumn
-      ? [5, 24, 24, 40, 7]
-      : [5, 44, 44, 7]
-    : hasDataColumn
-      ? [5, 44, 44, 7]
-      : [5, 88, 7];
+    ? showParamColumn
+      ? [5, 20, 20, 30, 18, 7]
+      : hasDataColumn
+        ? [5, 24, 24, 40, 7]
+        : [5, 44, 44, 7]
+    : showParamColumn
+      ? [5, 33, 32, 23, 7]
+      : hasDataColumn
+        ? [5, 44, 44, 7]
+        : [5, 88, 7];
 
   const colGroup = (
     <colgroup>
@@ -166,7 +191,9 @@ export default function DataTableCard({
                       colSpan={columns.length}
                       className="border-b border-[#EDF0F4] p-4 text-muted"
                     >
-                      No matching {isDistrict ? "district" : "state/UT"} found.
+                      {loading
+                        ? `Loading ${isDistrict ? "districts" : "states / UTs"}…`
+                        : `No matching ${isDistrict ? "district" : "state/UT"} found.`}
                     </td>
                   </tr>
                 ) : (
@@ -214,9 +241,14 @@ export default function DataTableCard({
                         </td>
 
                         {showParamColumn && (
-                          <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 font-mono text-blue">
-                            {formatIN(row[activeParamKey])}
-                          </td>
+                          <>
+                            <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 font-mono text-blue">
+                              {formatIN(row[activeParamKey])}
+                            </td>
+                            <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 font-mono text-navy">
+                              {percentOf(row[activeParamKey])}
+                            </td>
+                          </>
                         )}
 
                         {showUploadedColumn && (

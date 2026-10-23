@@ -4,12 +4,17 @@ import {
   Geographies,
   Geography,
   ZoomableGroup,
-  Marker,
 } from "react-simple-maps";
-import { getRangeForValue, formatIN } from "../../data/dashboardConfig.js";
+import {
+  getRangeForValue,
+  formatIN,
+  COLOR_RAMPS,
+  getParentKey,
+  getParameters,
+} from "../../data/dashboardConfig.js";
 
-const STATE_GEOJSON_URL = "/india-states-full.geojson";
-const DISTRICT_GEOJSON_URL = "/india-districts-2019-734.json";
+const STATE_GEOJSON_URL = "/data/census/states.geojson";
+const DISTRICT_GEOJSON_URL = "/data/census/districts.geojson";
 
 const DEFAULT_POSITION = {
   coordinates: [82, 22],
@@ -49,6 +54,54 @@ function normalizeStateName(name = "") {
   };
 
   return aliases[normalized] || normalized;
+}
+
+// Picks the selected area's outline colour from the chosen ramp: the ramp's
+// light colour on dark shades and its dark colour on light shades, so the
+// boundary always stands out and each ramp has its own.
+function getOutlineColors(fillHex, ramp) {
+  const onDark = ramp?.outline?.onDark || "#FFD84D";
+  const onLight = ramp?.outline?.onLight || "#020244";
+  // The film uses the ramp's own colours, so it reads as part of the ramp
+  const lightShade = ramp?.colors?.[0] || "#FFFFFF";
+  const darkShade = ramp?.colors?.[ramp.colors.length - 1] || "#020244";
+
+  const hex = String(fillHex || "").replace("#", "");
+  const full =
+    hex.length === 3
+      ? hex
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : hex;
+
+  if (full.length !== 6)
+    return {
+      stroke: onLight,
+      glow: "rgba(255,255,255,.9)",
+      film: darkShade,
+      filmOpacity: 0.16,
+    };
+
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const c = parseInt(full.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+  return luminance > 0.3
+    ? {
+        stroke: onLight,
+        glow: "rgba(255,255,255,.9)",
+        film: darkShade,
+        filmOpacity: 0.16,
+      } // light fill: thin film in the ramp's darkest shade
+    : {
+        stroke: onDark,
+        glow: "rgba(2,2,68,.9)",
+        film: lightShade,
+        filmOpacity: 0.22,
+      }; // dark fill: thin film in the ramp's lightest shade
 }
 
 function getGeoName(geo, level) {
@@ -245,6 +298,7 @@ export default function MapCard({
   stateData = [],
   districtData = [],
   ranges = [],
+  rampId,
   visibleRangeIds = [],
   level = "State / UT",
   onLevelChange,
@@ -255,9 +309,15 @@ export default function MapCard({
 
   const [tooltip, setTooltip] = useState(null);
   const [position, setPosition] = useState(DEFAULT_POSITION);
-  const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [focusPoint, setFocusPoint] = useState(null); // pin on the selected area
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // Area to zoom to and outline: set by a table-row click (selectedRow) or by
+  // clicking a state / district directly on the map.
+  const [focusRow, setFocusRow] = useState(selectedRow);
+
+  useEffect(() => {
+    setFocusRow(selectedRow);
+  }, [selectedRow]);
 
   const isDistrict = level === "District";
   const geographyUrl = isDistrict ? DISTRICT_GEOJSON_URL : STATE_GEOJSON_URL;
@@ -267,6 +327,7 @@ export default function MapCard({
   useEffect(() => {
     setTooltip(null);
     setFocusPoint(null);
+    setFocusRow(null);
     setPosition(DEFAULT_POSITION);
   }, [level]);
 
@@ -323,6 +384,65 @@ export default function MapCard({
     };
   }, [currentData, isDistrict]);
 
+  // Figures for the top-right card: the picked area, or the whole country when
+  // nothing is picked. The percentage is the share of the parent parameter.
+  const summary = useMemo(() => {
+    let row = null;
+
+    if (focusRow) {
+      row = isDistrict
+        ? byDistrictKey[makeDistrictKey(focusRow.state, focusRow.district)] ||
+          byName[normalizeName(focusRow.district)] ||
+          null
+        : byName[normalizeStateName(focusRow.state)] || null;
+    }
+
+    const pick = (key) => {
+      if (!key) return null;
+
+      if (row) {
+        const v = row[key];
+        return isValidNumber(v) ? Number(v) : null;
+      }
+
+      let total = 0;
+      let found = false;
+      currentData.forEach((r) => {
+        const v = r?.[key];
+        if (isValidNumber(v)) {
+          total += Number(v);
+          found = true;
+        }
+      });
+      return found ? total : null;
+    };
+
+    const parentKey = getParentKey(activeParamKey);
+    const value = pick(activeParamKey);
+    const parentValue = pick(parentKey);
+    const parentLabel =
+      getParameters().find((p) => p.key === parentKey)?.label || "";
+
+    return {
+      areaName: focusRow
+        ? (isDistrict ? focusRow.district : focusRow.state) || ""
+        : isDistrict
+          ? "All districts"
+          : "All States / UTs",
+      value,
+      percent:
+        value !== null && parentValue ? (value / parentValue) * 100 : null,
+      parentLabel,
+    };
+  }, [
+    focusRow,
+    currentData,
+    byName,
+    byDistrictKey,
+    isDistrict,
+    activeParamKey,
+  ]);
+
   function getRow(geo, name) {
     if (isDistrict) {
       const geoState = getGeoStateName(geo);
@@ -346,32 +466,44 @@ export default function MapCard({
     return byName[normalizeStateName(name)] || null;
   }
 
-  // True when a data row is the one that was clicked in the table.
-  function isSelectedRow(row) {
-    if (!row || !selectedRow) return false;
+  // True when the shape is the one picked (table row or map click).
+  function isSelectedGeo(geo, name, row) {
+    if (!focusRow) return false;
 
     if (isDistrict) {
+      const target = makeDistrictKey(focusRow.state, focusRow.district);
       return (
-        makeDistrictKey(row.state, row.district) ===
-        makeDistrictKey(selectedRow.state, selectedRow.district)
+        (row && makeDistrictKey(row.state, row.district) === target) ||
+        makeDistrictKey(getGeoStateName(geo), name) === target
       );
     }
 
+    const target = normalizeStateName(focusRow.state);
     return (
-      normalizeStateName(row.state) === normalizeStateName(selectedRow.state)
+      (row && normalizeStateName(row.state) === target) ||
+      normalizeStateName(name) === target
     );
   }
 
-  // Zoom to the shape whenever a table row is clicked.
+  // A click on the map picks that shape: it gets outlined and zoomed to.
+  function handleGeoClick(geo, name) {
+    setFocusRow(
+      isDistrict
+        ? { state: getGeoStateName(geo), district: name }
+        : { state: name },
+    );
+  }
+
+  // Zoom to the shape whenever a table row or a map shape is clicked.
   useEffect(() => {
-    if (!selectedRow) {
+    if (!focusRow) {
       setFocusPoint(null);
       return;
     }
 
     const match = geographiesRef.current.find((geo) => {
       const name = getGeoName(geo, isDistrict ? "District" : "State / UT");
-      return isSelectedRow(getRow(geo, name));
+      return isSelectedGeo(geo, name, getRow(geo, name));
     });
 
     if (!match) return;
@@ -409,26 +541,21 @@ export default function MapCard({
           state: isDistrict ? getGeoStateName(match) : "",
           value: matchedRow?.[activeParamKey] ?? null,
           x: (rect.width - MAP_WIDTH * scale) / 2 + viewX * scale,
-          // sit above the pin head (the pin is about 30px tall)
-          y: (rect.height - MAP_HEIGHT * scale) / 2 + viewY * scale - 32,
+          y: (rect.height - MAP_HEIGHT * scale) / 2 + viewY * scale - 6,
         });
       } else {
         setTooltip(null);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRow]);
+  }, [focusRow]);
 
   function colorFor(value) {
     if (!isValidNumber(value)) return "#E7EBF0";
 
-    const range = getRangeForValue(Number(value));
+    const range = getRangeForValue(Number(value), ranges);
 
-    if (!range || !visibleRangeIds.includes(range.id)) {
-      return "#E7EBF0";
-    }
-
-    return range.color;
+    return range ? range.color : "#E7EBF0";
   }
 
   function updateTooltip(event, geo, name) {
@@ -507,9 +634,12 @@ export default function MapCard({
       {/* Map fills the remaining height of the card */}
       <div
         ref={containerRef}
-        className="relative box-border min-h-[320px] min-w-0 w-full flex-1 cursor-grab overflow-hidden rounded-xl border border-line bg-[#F4F7FB] active:cursor-grabbing"
+        className="map-no-focus relative box-border min-h-[320px] min-w-0 w-full flex-1 cursor-grab overflow-hidden rounded-xl border border-line bg-[#F4F7FB] active:cursor-grabbing"
         onMouseLeave={() => setTooltip(null)}
       >
+        {/* No browser focus box around a clicked state; its boundary is drawn instead */}
+        <style>{`.map-no-focus svg *:focus, .map-no-focus svg *:focus-visible, .map-no-focus svg:focus { outline: none !important; } @keyframes mapFilmIn { from { opacity: 0; } to { opacity: 1; } } .map-film { animation: mapFilmIn .35s ease-out; }`}</style>
+
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{ scale: MAP_SCALE }}
@@ -541,89 +671,83 @@ export default function MapCard({
                   );
                   const row = getRow(geo, name);
 
-                  return { geo, name, row, selected: isSelectedRow(row) };
+                  return {
+                    geo,
+                    name,
+                    row,
+                    selected: isSelectedGeo(geo, name, row),
+                  };
                 });
 
                 // Draw the selected shape last so its outline is on top.
                 items.sort((a, b) => Number(a.selected) - Number(b.selected));
 
-                return items.map(({ geo, name, row, selected }) => (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill={colorFor(row?.[activeParamKey])}
-                    stroke={selected ? "#020244" : "#FFFFFF"}
-                    strokeWidth={selected ? 2 : isDistrict ? 0.35 : 0.55}
-                    vectorEffect={selected ? "non-scaling-stroke" : undefined}
-                    onMouseEnter={(event) => updateTooltip(event, geo, name)}
-                    onMouseMove={(event) => updateTooltip(event, geo, name)}
-                    style={{
-                      default: { outline: "none" },
-                      hover: {
-                        outline: "none",
-                        filter: "brightness(0.9)",
-                        cursor: "pointer",
-                      },
-                      pressed: { outline: "none" },
-                    }}
-                  />
-                ));
+                const ramp = COLOR_RAMPS.find((r) => r.id === rampId);
+
+                return items.map(({ geo, name, row, selected }) => {
+                  const fill = colorFor(row?.[activeParamKey]);
+                  const outline = selected
+                    ? getOutlineColors(fill, ramp)
+                    : null;
+
+                  return (
+                    <g key={geo.rsmKey}>
+                      <Geography
+                        geography={geo}
+                        fill={fill}
+                        stroke={selected ? outline.stroke : "#FFFFFF"}
+                        strokeWidth={selected ? 2.5 : isDistrict ? 0.35 : 0.55}
+                        vectorEffect={
+                          selected ? "non-scaling-stroke" : undefined
+                        }
+                        strokeLinejoin="round"
+                        tabIndex={-1}
+                        focusable="false"
+                        onClick={() => handleGeoClick(geo, name)}
+                        onMouseEnter={(event) =>
+                          updateTooltip(event, geo, name)
+                        }
+                        onMouseMove={(event) => updateTooltip(event, geo, name)}
+                        style={{
+                          default: {
+                            outline: "none",
+                            // soft halo in the opposite tone keeps the edge crisp
+                            filter: selected
+                              ? `drop-shadow(0 0 2px ${outline.glow})`
+                              : undefined,
+                          },
+                          hover: {
+                            outline: "none",
+                            filter: "brightness(0.9)",
+                            cursor: "pointer",
+                          },
+                          pressed: { outline: "none" },
+                        }}
+                      />
+
+                      {/* Faint see-through film over the selected area: the map colour still shows through */}
+                      {selected && (
+                        <Geography
+                          geography={geo}
+                          fill={outline.film}
+                          fillOpacity={outline.filmOpacity}
+                          stroke="none"
+                          pointerEvents="none"
+                          tabIndex={-1}
+                          focusable="false"
+                          className="map-film"
+                          style={{
+                            default: { outline: "none", pointerEvents: "none" },
+                            hover: { outline: "none", pointerEvents: "none" },
+                            pressed: { outline: "none", pointerEvents: "none" },
+                          }}
+                        />
+                      )}
+                    </g>
+                  );
+                });
               }}
             </Geographies>
-
-            {/* Pin on the selected state / district (kept the same size at any zoom) */}
-            {focusPoint && (
-              <Marker key={focusPoint.id} coordinates={focusPoint.coordinates}>
-                <g
-                  transform={`scale(${1 / position.zoom})`}
-                  pointerEvents="none"
-                >
-                  <circle cx="0" cy="0" r="4" fill="#E5484D" opacity="0.6">
-                    <animate
-                      attributeName="r"
-                      from="4"
-                      to="18"
-                      dur="1.2s"
-                      repeatCount="3"
-                    />
-                    <animate
-                      attributeName="opacity"
-                      from="0.6"
-                      to="0"
-                      dur="1.2s"
-                      repeatCount="3"
-                    />
-                  </circle>
-
-                  <path
-                    d="M0 0 C -6 -9, -10 -13, -10 -19 a10 10 0 1 1 20 0 C 10 -13, 6 -9, 0 0 Z"
-                    fill="#E5484D"
-                    stroke="#FFFFFF"
-                    strokeWidth="1.5"
-                  />
-                  <circle cx="0" cy="-19" r="3.5" fill="#FFFFFF" />
-
-                  {/* Mouse-pointer arrow that glides onto the spot */}
-                  <g transform="translate(6 -2)">
-                    <animateTransform
-                      attributeName="transform"
-                      type="translate"
-                      from="60 40"
-                      to="6 -2"
-                      dur="0.7s"
-                      fill="freeze"
-                    />
-                    <path
-                      d="M0 0 L0 17 L4.5 13 L7.5 20 L10 19 L7 12 L13 12 Z"
-                      fill="#FFFFFF"
-                      stroke="#111111"
-                      strokeWidth="1.2"
-                      strokeLinejoin="round"
-                    />
-                  </g>
-                </g>
-              </Marker>
-            )}
           </ZoomableGroup>
         </ComposableMap>
 
@@ -654,62 +778,54 @@ export default function MapCard({
           </div>
         )}
 
-        {/* Population legend — collapsible on mobile, always expanded from sm up */}
-        <div className="pointer-events-auto absolute right-2 top-2 z-10 w-36 max-w-[calc(100%-16px)] rounded-xl border border-line bg-white/95 shadow-sm backdrop-blur-sm sm:right-3 sm:top-3 sm:w-52">
-          <button
-            type="button"
-            onClick={() => setIsLegendOpen((open) => !open)}
-            aria-expanded={isLegendOpen}
-            className="flex w-full items-center justify-between gap-2 p-2 text-left sm:cursor-default sm:p-3"
-          >
-            <h4 className="text-[12px] font-extrabold text-navy">
-              {activeParamLabel} Range
-            </h4>
+        {/* Selected parameter card: figure, and its share of the parent parameter */}
+        {(() => {
+          const accent =
+            COLOR_RAMPS.find((r) => r.id === rampId)?.colors?.[3] || "#153E90";
 
-            <i
-              className={`ti ti-chevron-down shrink-0 text-[13px] text-navy transition-transform duration-200 sm:hidden ${
-                isLegendOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+          return (
+            <div className="pointer-events-none absolute right-2 top-2 z-10 w-[168px] max-w-[52%] rounded-xl border border-line bg-white/95 p-2 text-[11px] shadow-card backdrop-blur-sm sm:right-3 sm:top-3 sm:w-[210px] sm:p-3 sm:text-[12px]">
+              <div className="flex items-center gap-1.5 font-bold text-navy">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ background: accent }}
+                />
+                <span className="truncate">{summary.areaName}</span>
+              </div>
 
-          <div
-            className={`${isLegendOpen ? "block" : "hidden"} px-2 pb-2 sm:block sm:px-3 sm:pb-3`}
-          >
-            <div className="flex flex-col gap-1.5">
-              {ranges.map((range) => {
-                const isVisible = visibleRangeIds.includes(range.id);
+              <div className="mt-1 break-words leading-snug text-muted">
+                {activeParamLabel}
+              </div>
 
-                return (
-                  <div
-                    key={range.id}
-                    className="flex min-w-0 items-center gap-2 text-[11px] text-text"
-                  >
-                    <span
-                      className="h-3 w-3 shrink-0 rounded-full"
-                      style={{
-                        backgroundColor: range.color,
-                        opacity: isVisible ? 1 : 0.35,
-                      }}
-                    />
+              <div className="mt-0.5 text-[16px] font-extrabold leading-tight text-navy sm:text-[20px]">
+                {summary.value !== null
+                  ? formatIN(summary.value)
+                  : "Data unavailable"}
+              </div>
 
-                    <span
-                      className={`min-w-0 break-words ${
-                        isVisible ? "" : "text-muted opacity-60"
-                      }`}
-                    >
-                      {range.label}
+              {/* Only parameters that are part of another one show a percentage */}
+              {summary.percent !== null && (
+                <div className="mt-1.5">
+                  <div className="flex items-baseline justify-between gap-2 font-semibold text-navy">
+                    <span>{summary.percent.toFixed(1)}%</span>
+                    <span className="truncate text-[10px] font-normal text-muted sm:text-[11px]">
+                      of {summary.parentLabel}
                     </span>
                   </div>
-                );
-              })}
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[#E7EBF0]">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, summary.percent))}%`,
+                        background: accent,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-
-            <div className="mt-2 border-t border-line pt-2 text-[10px] text-muted">
-              Grey areas indicate unavailable or hidden data.
-            </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Map controls: one column, bottom left */}
         <div className="absolute bottom-3 left-3 z-10 flex flex-col items-center gap-1">

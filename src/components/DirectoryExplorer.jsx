@@ -9,7 +9,11 @@ const HIERARCHY = [
   { label: "States / UTs", level: "State", key: "states_uts" },
   { label: "Districts", level: "District", key: "districts" },
   { label: "Sub-Districts", level: "Sub-District", key: "sub_districts" },
-  { label: "Development Blocks", level: "Development Block", key: "development_blocks" },
+  {
+    label: "Development Blocks",
+    level: "Development Block",
+    key: "development_blocks",
+  },
   { label: "Villages", level: "Village", key: "villages" },
 ];
 
@@ -76,17 +80,13 @@ export default function DirectoryExplorer({ stats }) {
         level: h.level,
         value: stats ? fmt(stats[h.key]) : "…",
       })),
-    [stats]
+    [stats],
   );
 
   // Reset page when level or query changes
   useEffect(() => {
     setPage(0);
   }, [level, debouncedQuery]);
-
-  useEffect(() => {
-  console.log("query:", query, "| debounced:", debouncedQuery);
-}, [query, debouncedQuery]);
 
   // Fetch data — search goes to backend
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function DirectoryExplorer({ stats }) {
         offset: paged ? page * PAGE_SIZE : undefined,
         q: debouncedQuery.trim(), // ← Global search sent to backend
       },
-      controller.signal
+      controller.signal,
     )
       .then((res) => {
         if (id !== reqRef.current) return;
@@ -143,7 +143,9 @@ export default function DirectoryExplorer({ stats }) {
 
   function renderCell(col, r) {
     if (col.key === "code") {
-      return <span className="font-mono text-[#033972]">{formatCode(r.code)}</span>;
+      return (
+        <span className="font-mono text-[#033972]">{formatCode(r.code)}</span>
+      );
     }
     if (col.key === "census_2011_code") {
       const v = r.census_2011_code;

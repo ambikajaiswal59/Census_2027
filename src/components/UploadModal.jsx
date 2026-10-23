@@ -7,6 +7,7 @@ import {
   STATE_LEVEL,
   DISTRICT_LEVEL,
 } from "../context/UploadContext.jsx";
+import { fetchDirectory, PAGE_SIZE } from "../api/census.js";
 
 const MAX_SIZE_MB = 5;
 const MAX_ROWS = 10000;
@@ -17,18 +18,62 @@ const LEVEL_TABS = [
   { value: DISTRICT_LEVEL, icon: "ti-map-pin" },
 ];
 
-// State / UT sheet: State / UT + Dataset 1-3.
-// District sheet:  State / UT + District + Dataset 1-3.
+// Loads every row of a directory level. District is paginated by the backend,
+// so keep requesting pages until it says there are no more.
+async function fetchAllRows(level, paged) {
+  if (!paged) {
+    const res = await fetchDirectory(level, {});
+    return res.rows || [];
+  }
+
+  const all = [];
+  for (let page = 0; page < 100; page += 1) {
+    const res = await fetchDirectory(level, {
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE,
+    });
+    all.push(...(res.rows || []));
+    if (!res.has_more) break;
+  }
+  return all;
+}
+
+const byText = (a, b) => String(a).localeCompare(String(b));
+
+// State / UT sheet: every State / UT in the first column + Dataset 1-3.
+// District sheet:  District, then its State / UT, for every district + Dataset 1-3.
 // The leading key columns are only backend references used to match rows to
 // the map/table — they're never shown as selectable datasets in the UI.
-function downloadTemplate(level) {
+async function downloadTemplate(level) {
   const config = UPLOAD_LEVELS[level];
+  const blanks = config.templateColumns.slice(config.keyColumns).map(() => "");
+
+  let bodyRows;
+  if (level === DISTRICT_LEVEL) {
+    const districts = await fetchAllRows("District", true);
+    bodyRows = districts
+      .filter((d) => d.name)
+      .sort((a, b) => byText(a.state, b.state) || byText(a.name, b.name))
+      .map((d) => [d.name, d.state || "", ...blanks]);
+  } else {
+    const states = await fetchAllRows("State", false);
+    bodyRows = states
+      .filter((s) => s.name)
+      .sort((a, b) => byText(a.name, b.name))
+      .map((s) => [s.name, ...blanks]);
+  }
+
+  if (bodyRows.length === 0) throw new Error("No names were returned.");
+
   const worksheet = XLSX.utils.aoa_to_sheet([
     config.templateColumns,
-    config.templateSampleRow,
+    ...bodyRows,
   ]);
-  const workbook = XLSX.utils.book_new();
+  worksheet["!cols"] = config.templateColumns.map((_, i) => ({
+    wch: i < config.keyColumns ? 34 : 16,
+  }));
 
+  const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
   XLSX.writeFile(workbook, config.templateFileName);
 }
@@ -135,6 +180,7 @@ export default function UploadModal() {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
+  const [isPreparing, setIsPreparing] = useState(false);
   const [error, setError] = useState("");
   const [uploadLevel, setUploadLevel] = useState(dashboardLevel);
 
@@ -144,6 +190,7 @@ export default function UploadModal() {
       setError("");
       setIsDragging(false);
       setIsParsing(false);
+      setIsPreparing(false);
       setUploadLevel(dashboardLevel);
     }
   }, [isModalOpen, dashboardLevel]);
@@ -159,6 +206,20 @@ export default function UploadModal() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isModalOpen, closeModal]);
+
+  async function handleTemplate() {
+    setError("");
+    setIsPreparing(true);
+    try {
+      await downloadTemplate(uploadLevel);
+    } catch (err) {
+      setError(
+        `Could not prepare the template (${err?.message || "network error"}). Please try again.`,
+      );
+    } finally {
+      setIsPreparing(false);
+    }
+  }
 
   async function handleFile(file) {
     if (!file) return;
@@ -269,18 +330,21 @@ export default function UploadModal() {
               </p>
               <p className="mt-0.5 text-[11px] leading-snug text-muted">
                 {uploadLevel === DISTRICT_LEVEL
-                  ? "State / UT and District identify each row; fill in Dataset 1-3 next to them, then upload the completed file below."
-                  : "State / UT identifies each row; fill in Dataset 1-3 next to it, then upload the completed file below."}
+                  ? "All districts and their State / UT are already listed; fill in Dataset 1-3 next to them, then upload the completed file below."
+                  : "All States / UTs are already listed; fill in Dataset 1-3 next to them, then upload the completed file below."}
               </p>
             </div>
 
             <button
               type="button"
-              onClick={() => downloadTemplate(uploadLevel)}
-              className="flex shrink-0 items-center gap-1.5 rounded-[9px] border border-line bg-white px-2.5 py-1.5 text-[12px] font-semibold text-navy hover:bg-soft"
+              onClick={handleTemplate}
+              disabled={isPreparing}
+              className="flex shrink-0 disabled:cursor-wait disabled:opacity-60 items-center gap-1.5 rounded-[9px] border border-line bg-white px-2.5 py-1.5 text-[12px] font-semibold text-navy hover:bg-soft"
             >
-              <i className="ti ti-download" />
-              Template
+              <i
+                className={`ti ${isPreparing ? "ti-loader-2 animate-spin" : "ti-download"}`}
+              />
+              {isPreparing ? "Preparing…" : "Template"}
             </button>
           </div>
 

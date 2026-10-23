@@ -17,20 +17,25 @@ export const DISTRICT_LEVEL = "District";
 export const UPLOAD_LEVELS = {
   [STATE_LEVEL]: {
     keyColumns: 1,
+    stateColumn: 0,
+    districtColumn: null,
     templateColumns: ["State / UT", "Dataset 1", "Dataset 2", "Dataset 3"],
     templateSampleRow: ["Uttar Pradesh", "", "", ""],
     templateFileName: "state-upload-template.xlsx",
   },
+  // District sheet: District comes first, then its State / UT.
   [DISTRICT_LEVEL]: {
     keyColumns: 2,
+    stateColumn: 1,
+    districtColumn: 0,
     templateColumns: [
-      "State / UT",
       "District",
+      "State / UT",
       "Dataset 1",
       "Dataset 2",
       "Dataset 3",
     ],
-    templateSampleRow: ["Uttar Pradesh", "Lucknow", "", "", ""],
+    templateSampleRow: ["Lucknow", "Uttar Pradesh", "", "", ""],
     templateFileName: "district-upload-template.xlsx",
   },
 };

@@ -1,0 +1,402 @@
+{
+  "year": 2011,
+  "label": "Census 2011",
+  "parameters": [
+    {
+      "key": "households",
+      "label": "Total Households",
+      "shortLabel": "Total Households",
+      "group": "Total"
+    },
+    {
+      "key": "total_population",
+      "label": "Total Population",
+      "shortLabel": "Total Population",
+      "group": "Total"
+    },
+    {
+      "key": "male_population",
+      "label": "Male Population",
+      "shortLabel": "Male Population",
+      "group": "Total"
+    },
+    {
+      "key": "female_population",
+      "label": "Female Population",
+      "shortLabel": "Female Population",
+      "group": "Total"
+    },
+    {
+      "key": "child_population",
+      "label": "Total Child Population (0-6)",
+      "shortLabel": "Total Child Population (0-6)",
+      "group": "Total"
+    },
+    {
+      "key": "child_male",
+      "label": "Male Child Population (0-6)",
+      "shortLabel": "Male Child Population (0-6)",
+      "group": "Total"
+    },
+    {
+      "key": "child_female",
+      "label": "Female Child Population (0-6)",
+      "shortLabel": "Female Child Population (0-6)",
+      "group": "Total"
+    },
+    {
+      "key": "sc_population",
+      "label": "Total SC Population",
+      "shortLabel": "Total SC Population",
+      "group": "Total"
+    },
+    {
+      "key": "sc_male",
+      "label": "Male SC Population",
+      "shortLabel": "Male SC Population",
+      "group": "Total"
+    },
+    {
+      "key": "sc_female",
+      "label": "Female SC Population",
+      "shortLabel": "Female SC Population",
+      "group": "Total"
+    },
+    {
+      "key": "st_population",
+      "label": "Total ST Population",
+      "shortLabel": "Total ST Population",
+      "group": "Total"
+    },
+    {
+      "key": "st_male",
+      "label": "Male ST Population",
+      "shortLabel": "Male ST Population",
+      "group": "Total"
+    },
+    {
+      "key": "st_female",
+      "label": "Female ST Population",
+      "shortLabel": "Female ST Population",
+      "group": "Total"
+    },
+    {
+      "key": "literates",
+      "label": "Total Literates",
+      "shortLabel": "Total Literates",
+      "group": "Total"
+    },
+    {
+      "key": "literate_male",
+      "label": "Male Literates",
+      "shortLabel": "Male Literates",
+      "group": "Total"
+    },
+    {
+      "key": "literate_female",
+      "label": "Female Literates",
+      "shortLabel": "Female Literates",
+      "group": "Total"
+    },
+    {
+      "key": "illiterates",
+      "label": "Total Illiterates",
+      "shortLabel": "Total Illiterates",
+      "group": "Total"
+    },
+    {
+      "key": "illiterate_male",
+      "label": "Male Illiterates",
+      "shortLabel": "Male Illiterates",
+      "group": "Total"
+    },
+    {
+      "key": "illiterate_female",
+      "label": "Female Illiterates",
+      "shortLabel": "Female Illiterates",
+      "group": "Total"
+    },
+    {
+      "key": "workers",
+      "label": "Total Workers",
+      "shortLabel": "Total Workers",
+      "group": "Total"
+    },
+    {
+      "key": "workers_male",
+      "label": "Male Workers",
+      "shortLabel": "Male Workers",
+      "group": "Total"
+    },
+    {
+      "key": "workers_female",
+      "label": "Female Workers",
+      "shortLabel": "Female Workers",
+      "group": "Total"
+    },
+    {
+      "key": "rural_households",
+      "label": "Rural - Total Households",
+      "shortLabel": "Total Households",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_total_population",
+      "label": "Rural - Total Population",
+      "shortLabel": "Total Population",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_male_population",
+      "label": "Rural - Male Population",
+      "shortLabel": "Male Population",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_female_population",
+      "label": "Rural - Female Population",
+      "shortLabel": "Female Population",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_child_population",
+      "label": "Rural - Total Child Population (0-6)",
+      "shortLabel": "Total Child Population (0-6)",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_child_male",
+      "label": "Rural - Male Child Population (0-6)",
+      "shortLabel": "Male Child Population (0-6)",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_child_female",
+      "label": "Rural - Female Child Population (0-6)",
+      "shortLabel": "Female Child Population (0-6)",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_sc_population",
+      "label": "Rural - Total SC Population",
+      "shortLabel": "Total SC Population",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_sc_male",
+      "label": "Rural - Male SC Population",
+      "shortLabel": "Male SC Population",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_sc_female",
+      "label": "Rural - Female SC Population",
+      "shortLabel": "Female SC Population",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_st_population",
+      "label": "Rural - Total ST Population",
+      "shortLabel": "Total ST Population",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_st_male",
+      "label": "Rural - Male ST Population",
+      "shortLabel": "Male ST Population",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_st_female",
+      "label": "Rural - Female ST Population",
+      "shortLabel": "Female ST Population",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_literates",
+      "label": "Rural - Total Literates",
+      "shortLabel": "Total Literates",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_literate_male",
+      "label": "Rural - Male Literates",
+      "shortLabel": "Male Literates",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_literate_female",
+      "label": "Rural - Female Literates",
+      "shortLabel": "Female Literates",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_illiterates",
+      "label": "Rural - Total Illiterates",
+      "shortLabel": "Total Illiterates",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_illiterate_male",
+      "label": "Rural - Male Illiterates",
+      "shortLabel": "Male Illiterates",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_illiterate_female",
+      "label": "Rural - Female Illiterates",
+      "shortLabel": "Female Illiterates",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_workers",
+      "label": "Rural - Total Workers",
+      "shortLabel": "Total Workers",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_workers_male",
+      "label": "Rural - Male Workers",
+      "shortLabel": "Male Workers",
+      "group": "Rural"
+    },
+    {
+      "key": "rural_workers_female",
+      "label": "Rural - Female Workers",
+      "shortLabel": "Female Workers",
+      "group": "Rural"
+    },
+    {
+      "key": "urban_households",
+      "label": "Urban - Total Households",
+      "shortLabel": "Total Households",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_total_population",
+      "label": "Urban - Total Population",
+      "shortLabel": "Total Population",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_male_population",
+      "label": "Urban - Male Population",
+      "shortLabel": "Male Population",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_female_population",
+      "label": "Urban - Female Population",
+      "shortLabel": "Female Population",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_child_population",
+      "label": "Urban - Total Child Population (0-6)",
+      "shortLabel": "Total Child Population (0-6)",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_child_male",
+      "label": "Urban - Male Child Population (0-6)",
+      "shortLabel": "Male Child Population (0-6)",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_child_female",
+      "label": "Urban - Female Child Population (0-6)",
+      "shortLabel": "Female Child Population (0-6)",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_sc_population",
+      "label": "Urban - Total SC Population",
+      "shortLabel": "Total SC Population",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_sc_male",
+      "label": "Urban - Male SC Population",
+      "shortLabel": "Male SC Population",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_sc_female",
+      "label": "Urban - Female SC Population",
+      "shortLabel": "Female SC Population",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_st_population",
+      "label": "Urban - Total ST Population",
+      "shortLabel": "Total ST Population",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_st_male",
+      "label": "Urban - Male ST Population",
+      "shortLabel": "Male ST Population",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_st_female",
+      "label": "Urban - Female ST Population",
+      "shortLabel": "Female ST Population",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_literates",
+      "label": "Urban - Total Literates",
+      "shortLabel": "Total Literates",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_literate_male",
+      "label": "Urban - Male Literates",
+      "shortLabel": "Male Literates",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_literate_female",
+      "label": "Urban - Female Literates",
+      "shortLabel": "Female Literates",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_illiterates",
+      "label": "Urban - Total Illiterates",
+      "shortLabel": "Total Illiterates",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_illiterate_male",
+      "label": "Urban - Male Illiterates",
+      "shortLabel": "Male Illiterates",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_illiterate_female",
+      "label": "Urban - Female Illiterates",
+      "shortLabel": "Female Illiterates",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_workers",
+      "label": "Urban - Total Workers",
+      "shortLabel": "Total Workers",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_workers_male",
+      "label": "Urban - Male Workers",
+      "shortLabel": "Male Workers",
+      "group": "Urban"
+    },
+    {
+      "key": "urban_workers_female",
+      "label": "Urban - Female Workers",
+      "shortLabel": "Female Workers",
+      "group": "Urban"
+    }
+  ]
+}

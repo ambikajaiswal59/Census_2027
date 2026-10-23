@@ -9,11 +9,24 @@ import DataTableCard from "../components/dashboard/DataTableCard.jsx";
 import {
   levelOptions,
   getParameters,
-  getPopulationRanges,
+  getDataRanges,
+  DEFAULT_CLASSIFICATION,
+  DEFAULT_RAMP_ID,
   getStateData,
   getDistrictData,
 } from "../data/dashboardConfig.js";
-import { useEnableUpload, useUpload } from "../context/UploadContext.jsx";
+import {
+  useEnableUpload,
+  useUpload,
+  UPLOAD_LEVELS,
+} from "../context/UploadContext.jsx";
+
+const rowNameKey = (state, district) =>
+  `${String(state ?? "")
+    .trim()
+    .toLowerCase()}|${String(district ?? "")
+    .trim()
+    .toLowerCase()}`;
 
 export default function PopulationDashboard() {
   // Shows the Upload button in the header while this page is open.
@@ -39,16 +52,24 @@ export default function PopulationDashboard() {
   const mapSectionRef = useRef(null);
 
   const parameters = getParameters();
-  const ranges = getPopulationRanges();
+  // Legend classification: 5 classes by default, or 3.
+  const [classCount, setClassCount] = useState(DEFAULT_CLASSIFICATION);
+  const [rampId, setRampId] = useState(DEFAULT_RAMP_ID);
 
   const stateData = getStateData();
   const districtData = getDistrictData();
 
   const currentData = level === "District" ? districtData : stateData;
 
-  const [visibleRangeIds, setVisibleRangeIds] = useState(
-    ranges.map((range) => range.id),
+  // Legend / map classes follow the values of the selected field, so colours
+  // change with the Parameter and with State / UT vs District.
+  const ranges = getDataRanges(
+    activeParam ? currentData.map((row) => row[activeParam]) : [],
+    classCount,
+    rampId,
   );
+
+  const visibleRangeIds = ranges.map((range) => range.id);
 
   // A Customer Input pick belongs to one level. If the dashboard moves to the
   // other level, drop it so only one field is ever active.
@@ -94,7 +115,7 @@ export default function PopulationDashboard() {
   // the level being shown, reshaped as
   //   { heading, rows: [{ state, district?, value }] }
   // State / UT sheet:  column 0 = state.
-  // District sheet:    column 0 = state, column 1 = district.
+  // District sheet:    column 0 = district, column 1 = state.
   // so the table (and the map later) can match it by name.
   const levelUpload = uploadsByLevel[level] ?? null;
   const uploadedColumn =
@@ -102,12 +123,49 @@ export default function PopulationDashboard() {
       ? {
           heading: levelUpload.columns[selectedUpload.index],
           rows: levelUpload.rows.map((row) => ({
-            state: row[0],
-            district: level === "District" ? row[1] : undefined,
+            state: row[UPLOAD_LEVELS[level].stateColumn],
+            district:
+              level === "District"
+                ? row[UPLOAD_LEVELS[level].districtColumn]
+                : undefined,
             value: row[selectedUpload.index],
           })),
         }
       : null;
+
+  // Without an upload the table lists the census 2011 rows (the same areas the
+  // map draws), so every row has figures. Once a sheet is uploaded for this
+  // level, the names come from that template (its State / UT, or
+  // District + State / UT, columns), same as the download.
+  const sampleByKey = {};
+  currentData.forEach((row) => {
+    sampleByKey[rowNameKey(row.state, row.district)] = row;
+  });
+
+  const uploadedNames = levelUpload
+    ? levelUpload.rows
+        .map((row) => ({
+          state: row[UPLOAD_LEVELS[level].stateColumn],
+          ...(level === "District"
+            ? { district: row[UPLOAD_LEVELS[level].districtColumn] }
+            : {}),
+        }))
+        .filter((r) => String(r.state ?? "").trim())
+    : null;
+
+  const censusRows = [...currentData].sort(
+    (a, b) =>
+      String(a.state).localeCompare(String(b.state)) ||
+      String(a.district ?? "").localeCompare(String(b.district ?? "")),
+  );
+
+  const tableData = uploadedNames?.length
+    ? uploadedNames.map((row) => ({
+        ...(sampleByKey[rowNameKey(row.state, row.district)] || {}),
+        state: row.state,
+        ...(level === "District" ? { district: row.district } : {}),
+      }))
+    : censusRows;
 
   // Title/legend label follows whichever single field is active.
   const activeParamLabel = uploadedColumn
@@ -117,7 +175,7 @@ export default function PopulationDashboard() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-wrap px-3 py-0 sm:px-6 sm:py-1.5">
+      <main className="mx-auto w-full max-w-wrap px-3 pb-2 pt-3 sm:px-6 sm:py-1.5">
         <div
           className="
             grid min-w-0 grid-cols-1 gap-3
@@ -130,9 +188,8 @@ export default function PopulationDashboard() {
           <aside
             className="
               min-h-0 min-w-0
-              max-h-[420px] overflow-y-auto
               lg:col-start-1 lg:row-start-1 lg:row-span-2
-              lg:h-full lg:max-h-none
+              lg:h-full
             "
           >
             <DashboardSidebar
@@ -161,6 +218,7 @@ export default function PopulationDashboard() {
               stateData={stateData}
               districtData={districtData}
               ranges={ranges}
+              rampId={rampId}
               visibleRangeIds={visibleRangeIds}
               selectedRow={selectedRow}
             />
@@ -170,15 +228,17 @@ export default function PopulationDashboard() {
           <aside
             className="
               min-h-0 min-w-0
-              max-h-[320px] overflow-y-auto
               lg:col-start-3 lg:row-start-1 lg:row-span-2
-              lg:h-full lg:max-h-none
+              lg:h-full
             "
           >
             <LegendCard
               ranges={ranges}
-              visibleRangeIds={visibleRangeIds}
-              setVisibleRangeIds={setVisibleRangeIds}
+              classCount={classCount}
+              onClassCountChange={setClassCount}
+              rampId={rampId}
+              onRampChange={setRampId}
+              activeParamLabel={activeParamLabel}
             />
           </aside>
 
@@ -192,7 +252,7 @@ export default function PopulationDashboard() {
           >
             <div className="h-full min-h-0 min-w-0 overflow-hidden rounded-2xl">
               <DataTableCard
-                data={currentData}
+                data={tableData}
                 level={level}
                 onRowClick={handleRowClick}
                 selectedKey={selectedKey}

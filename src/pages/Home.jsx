@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 
 import Hero from "../components/Hero.jsx";
 import ListPanel from "../components/ListPanel.jsx";
-import { useStats } from "../useStats.js";
 import { phaseData } from "../data/phaseData.js";
 import { sourceData } from "../data/sourceData.js";
 import PhaseModal from "../components/PhaseModal.jsx";
@@ -12,9 +11,9 @@ import useNationalStats from "../hooks/useNationalStats.js";
 import { scrollToSection } from "../utils.js";
 
 export default function Home() {
-  const { stats: nationalStats } = useNationalStats();
-  const lastSync = nationalStats?.created_at
-    ? new Date(nationalStats.created_at).toLocaleDateString("en-GB", {
+  const { stats } = useNationalStats();
+  const lastSync = stats?.created_at
+    ? new Date(stats.created_at).toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -23,7 +22,6 @@ export default function Home() {
   const [activeItem, setActiveItem] = useState(null);
   const censusHeadRef = useRef(null);
   const directoryHeadRef = useRef(null);
-  const { data: stats, loading: statsLoading, error: statsError } = useStats();
   useEffect(() => {
     const hash = window.location.hash;
     const timer = setTimeout(() => {
@@ -122,8 +120,6 @@ export default function Home() {
           </section>
         </section>
       </main>
-
-   
 
       <PhaseModal activeItem={activeItem} onClose={() => setActiveItem(null)} />
     </>
