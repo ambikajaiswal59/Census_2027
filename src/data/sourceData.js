@@ -1,5 +1,17 @@
 export const sourceData = [
   {
+    title: "Census 2nd phase likely to start Jan 10",
+    source: "Hindustan TImes",
+    date: "23 October, 2026",
+    icon: "ti-building-bank",
+    summary:
+      "Census 2027 Phase II (population enumeration) is likely to begin in Delhi on January 10, with self-enumeration first and door-to-door visits by enumerators after that. Officials say the dates are still tentative.",
+    points: [
+      "Phase II is likely to run in Delhi with self-enumeration from January 10 to 24, door-to-door visits from January 25 to February 28 and a revisional round from March 1 to 5, after Phase I house-listing was completed with over 50,000 enumerators. For the first time in independent India, enumerators will ask a question on caste, among 40 notified questions (11 more than in 2011). Enumerators will be trained at the district level, police will provide security in sensitive areas, awareness campaigns will assure residents their data stays confidential, and results are expected to take two to three years.",
+    ],
+    link: "/images/census-hindustantimes-oct23.jpeg",
+  },
+  {
     title: "SC seeks caste verification SOP under Census",
     source: "The Hindu",
     date: "13 October, 2026",
@@ -47,21 +59,5 @@ export const sourceData = [
       " Ladakh completed entire Census exercise on October 5, first among all States and UTs; snow-bound areas of Himalayan States also completed the exercise; many people confused Census with SIR exercise, says J&K Census chief",
     ],
     link: "/images/census-hindu-oct7.jpeg",
-  },
-  {
-    title: "Registrar General addresses press conference on Census-2027",
-    source: "PIB",
-    date: "Press briefing",
-    icon: "ti-microphone-2",
-    summary:
-      "The Census Commissioner assures citizens their individual data stays confidential and clarifies how the caste question will be handled.",
-    points: [
-      "Under Section 15 of the Census Act, individual data collected cannot be shared under the RTI Act, used as court evidence, or shared with any organisation",
-      "Only aggregated statistical data is used for tabulation and policymaking — never individual records",
-      "Caste-related questions will be finalised after further discussion and collected during Population Enumeration, the second phase",
-      "Citizens were urged to share accurate information, since individual data cannot be used to claim or deny benefit under any government scheme",
-      "Self-enumeration lets people submit their details digitally in the 15-day window before house-to-house listing begins",
-    ],
-    link: "https://www.pib.gov.in/PressReleaseDetail.aspx?PRID=2246847&reg=3&lang=1",
   },
 ];

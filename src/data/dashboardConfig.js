@@ -51,6 +51,9 @@ export const COLOR_RAMPS = [
   },
 ];
 
+// Parameter shown on first load and after the map reset button.
+export const DEFAULT_PARAM_KEY = "households";
+
 export const DEFAULT_RAMP_ID = "yellows";
 
 // Fixed classification boundaries.

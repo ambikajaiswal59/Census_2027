@@ -28,6 +28,14 @@ const MAP_HEIGHT = 700;
 const MIN_ZOOM = 0.8;
 const MAX_ZOOM = 12;
 
+// Map borders: state lines are thicker and mid grey (State / UT map and on top of
+// the District map), district lines
+// thinner and light grey (widths in screen pixels).
+const STATE_BORDER_COLOR = "#808080";
+const STATE_BORDER_WIDTH = 1.5;
+const DISTRICT_BORDER_COLOR = "#D3D3D3";
+const DISTRICT_BORDER_WIDTH = 1;
+
 function normalizeName(name = "") {
   return String(name)
     .trim()
@@ -303,6 +311,7 @@ export default function MapCard({
   level = "State / UT",
   onLevelChange,
   selectedRow = null, // row clicked in the table; the map zooms to it
+  onReset, // called by the refresh button, to go back to the default parameter
 }) {
   const containerRef = useRef(null);
   const geographiesRef = useRef([]);
@@ -581,7 +590,9 @@ export default function MapCard({
   function resetMap() {
     setTooltip(null);
     setFocusPoint(null);
+    setFocusRow(null);
     setPosition(DEFAULT_POSITION);
+    onReset?.();
   }
 
   function toggleFullscreen() {
@@ -695,11 +706,21 @@ export default function MapCard({
                       <Geography
                         geography={geo}
                         fill={fill}
-                        stroke={selected ? outline.stroke : "#FFFFFF"}
-                        strokeWidth={selected ? 2.5 : isDistrict ? 0.35 : 0.55}
-                        vectorEffect={
-                          selected ? "non-scaling-stroke" : undefined
+                        stroke={
+                          selected
+                            ? outline.stroke
+                            : isDistrict
+                              ? DISTRICT_BORDER_COLOR
+                              : STATE_BORDER_COLOR
                         }
+                        strokeWidth={
+                          selected
+                            ? 2.5
+                            : isDistrict
+                              ? DISTRICT_BORDER_WIDTH
+                              : STATE_BORDER_WIDTH
+                        }
+                        vectorEffect="non-scaling-stroke"
                         strokeLinejoin="round"
                         tabIndex={-1}
                         focusable="false"
@@ -748,6 +769,32 @@ export default function MapCard({
                 });
               }}
             </Geographies>
+
+            {/* District view: draw the state borders on top so each district can be traced to its state */}
+            {isDistrict && (
+              <Geographies geography={STATE_GEOJSON_URL}>
+                {({ geographies }) =>
+                  geographies.map((geo) => (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill="none"
+                      stroke={STATE_BORDER_COLOR}
+                      strokeWidth={STATE_BORDER_WIDTH}
+                      strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                      tabIndex={-1}
+                      focusable="false"
+                      style={{
+                        default: { outline: "none", pointerEvents: "none" },
+                        hover: { outline: "none", pointerEvents: "none" },
+                        pressed: { outline: "none", pointerEvents: "none" },
+                      }}
+                    />
+                  ))
+                }
+              </Geographies>
+            )}
           </ZoomableGroup>
         </ComposableMap>
 
@@ -784,12 +831,8 @@ export default function MapCard({
             COLOR_RAMPS.find((r) => r.id === rampId)?.colors?.[3] || "#153E90";
 
           return (
-            <div className="pointer-events-none absolute right-2 top-2 z-10 w-[168px] max-w-[52%] rounded-xl border border-line bg-white/95 p-2 text-[11px] shadow-card backdrop-blur-sm sm:right-3 sm:top-3 sm:w-[210px] sm:p-3 sm:text-[12px]">
+            <div className="pointer-events-none absolute bottom-2 right-2 z-10 w-[168px] max-w-[52%] rounded-xl border border-line bg-white/95 p-2 text-[11px] shadow-card backdrop-blur-sm sm:bottom-3 sm:right-3 sm:w-[210px] sm:p-3 sm:text-[12px]">
               <div className="flex items-center gap-1.5 font-bold text-navy">
-                <span
-                  className="h-2 w-2 shrink-0 rounded-full"
-                  style={{ background: accent }}
-                />
                 <span className="truncate">{summary.areaName}</span>
               </div>
 

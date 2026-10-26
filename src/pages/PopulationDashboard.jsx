@@ -12,6 +12,7 @@ import {
   getDataRanges,
   DEFAULT_CLASSIFICATION,
   DEFAULT_RAMP_ID,
+  DEFAULT_PARAM_KEY,
   getStateData,
   getDistrictData,
 } from "../data/dashboardConfig.js";
@@ -45,7 +46,7 @@ export default function PopulationDashboard() {
   useEffect(() => {
     setDashboardLevel(level);
   }, [level, setDashboardLevel]);
-  const [activeParam, setActiveParam] = useState("total_population");
+  const [activeParam, setActiveParam] = useState(DEFAULT_PARAM_KEY);
 
   // Row clicked in the table; the map zooms to it.
   const [selectedRow, setSelectedRow] = useState(null);
@@ -85,7 +86,7 @@ export default function PopulationDashboard() {
   // back to the default Parameter.
   useEffect(() => {
     if (activeParam === null && !selectedUpload) {
-      setActiveParam("total_population");
+      setActiveParam(DEFAULT_PARAM_KEY);
     }
   }, [activeParam, selectedUpload]);
 
@@ -93,6 +94,13 @@ export default function PopulationDashboard() {
   useEffect(() => {
     setSelectedRow(null);
   }, [level]);
+
+  // Map refresh button: back to the default parameter with nothing picked.
+  function handleMapReset() {
+    setActiveParam(DEFAULT_PARAM_KEY);
+    setSelectedUpload(null);
+    setSelectedRow(null);
+  }
 
   function handleRowClick(row) {
     // New object each click, so clicking the same row again zooms again.
@@ -221,6 +229,7 @@ export default function PopulationDashboard() {
               rampId={rampId}
               visibleRangeIds={visibleRangeIds}
               selectedRow={selectedRow}
+              onReset={handleMapReset}
             />
           </section>
 
