@@ -84,6 +84,10 @@ export default function DirectoryExplorer({ stats }) {
     setPage(0);
   }, [level, debouncedQuery]);
 
+  useEffect(() => {
+  console.log("query:", query, "| debounced:", debouncedQuery);
+}, [query, debouncedQuery]);
+
   // Fetch data — search goes to backend
   useEffect(() => {
     const controller = new AbortController();
