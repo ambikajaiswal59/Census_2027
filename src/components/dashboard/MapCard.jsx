@@ -4,6 +4,7 @@ import {
   Geographies,
   Geography,
   ZoomableGroup,
+  Marker,
 } from "react-simple-maps";
 import {
   getRangeForValue,
@@ -110,6 +111,13 @@ function getOutlineColors(fillHex, ramp) {
         film: lightShade,
         filmOpacity: 0.22,
       }; // dark fill: thin film in the ramp's lightest shade
+}
+
+// Whole numbers in the Indian format; uploaded decimals keep up to 2 places.
+function formatValue(value) {
+  return Number.isInteger(value)
+    ? formatIN(value)
+    : value.toLocaleString("en-IN", { maximumFractionDigits: 2 });
 }
 
 function getGeoName(geo, level) {
@@ -300,6 +308,39 @@ function getPinPoint(geometry) {
   return best;
 }
 
+// Label position for a shape: the centre of mass of its largest polygon.
+function getLabelPoint(geometry) {
+  if (!geometry) return null;
+  const polys =
+    geometry.type === "Polygon"
+      ? [geometry.coordinates]
+      : geometry.type === "MultiPolygon"
+        ? geometry.coordinates
+        : [];
+  let best = null;
+  let bestArea = -1;
+  polys.forEach((poly) => {
+    const ring = poly[0] || [];
+    let a = 0;
+    let cx = 0;
+    let cy = 0;
+    for (let i = 0; i < ring.length - 1; i += 1) {
+      const [x0, y0] = ring[i];
+      const [x1, y1] = ring[i + 1];
+      const f = x0 * y1 - x1 * y0;
+      a += f;
+      cx += (x0 + x1) * f;
+      cy += (y0 + y1) * f;
+    }
+    const area = Math.abs(a) / 2;
+    if (area > bestArea && a !== 0) {
+      bestArea = area;
+      best = [cx / (3 * a), cy / (3 * a)];
+    }
+  });
+  return best;
+}
+
 export default function MapCard({
   activeParamKey,
   activeParamLabel,
@@ -312,6 +353,7 @@ export default function MapCard({
   onLevelChange,
   selectedRow = null, // row clicked in the table; the map zooms to it
   onReset, // called by the refresh button, to go back to the default parameter
+  onSelect, // called with the area clicked on the map, so the table can follow
 }) {
   const containerRef = useRef(null);
   const geographiesRef = useRef([]);
@@ -320,6 +362,7 @@ export default function MapCard({
   const [position, setPosition] = useState(DEFAULT_POSITION);
   const [focusPoint, setFocusPoint] = useState(null); // pin on the selected area
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showLabels, setShowLabels] = useState(false); // names of all states / districts
   // Area to zoom to and outline: set by a table-row click (selectedRow) or by
   // clicking a state / district directly on the map.
   const [focusRow, setFocusRow] = useState(selectedRow);
@@ -496,11 +539,20 @@ export default function MapCard({
 
   // A click on the map picks that shape: it gets outlined and zoomed to.
   function handleGeoClick(geo, name) {
-    setFocusRow(
-      isDistrict
-        ? { state: getGeoStateName(geo), district: name }
-        : { state: name },
-    );
+    // Use the census row when there is one, so the table recognises the same area.
+    const row = getRow(geo, name);
+    const picked = isDistrict
+      ? {
+          ...row,
+          state: row?.state ?? getGeoStateName(geo),
+          district: row?.district ?? name,
+        }
+      : { ...row, state: row?.state ?? name };
+
+    // With onSelect the page owns the selection (map and table stay linked) and
+    // hands it back through selectedRow; otherwise the map keeps it itself.
+    if (onSelect) onSelect(picked);
+    else setFocusRow(picked);
   }
 
   // Zoom to the shape whenever a table row or a map shape is clicked.
@@ -616,10 +668,10 @@ export default function MapCard({
 
   return (
     <div
-      className={`box-border flex min-h-0 min-w-0 flex-col border border-navy bg-white p-3 shadow-card sm:p-4 ${
+      className={`box-border flex min-h-0 min-w-0 flex-col ${
         isFullscreen
-          ? "fixed inset-0 z-[100] h-[100dvh] w-screen rounded-none"
-          : "h-full w-full rounded-2xl"
+          ? "fixed inset-0 z-[100] h-[100dvh] w-screen rounded-none bg-white p-3 sm:p-4"
+          : "h-full w-full"
       }`}
     >
       {/* Header */}
@@ -645,7 +697,7 @@ export default function MapCard({
       {/* Map fills the remaining height of the card */}
       <div
         ref={containerRef}
-        className="map-no-focus relative box-border min-h-[320px] min-w-0 w-full flex-1 cursor-grab overflow-hidden rounded-xl border border-line bg-[#F4F7FB] active:cursor-grabbing"
+        className="map-no-focus relative box-border min-h-[320px] min-w-0 w-full flex-1 cursor-grab overflow-hidden rounded-2xl border border-line bg-[#F4F7FB] shadow-card active:cursor-grabbing"
         onMouseLeave={() => setTooltip(null)}
       >
         {/* No browser focus box around a clicked state; its boundary is drawn instead */}
@@ -795,6 +847,95 @@ export default function MapCard({
                 }
               </Geographies>
             )}
+
+            {/* District view: the picked district's outline and film go on top of the
+                state borders, so a shared edge shows the picked colour, not grey */}
+            {isDistrict && focusRow && (
+              <Geographies geography={geographyUrl}>
+                {({ geographies }) => {
+                  const ramp = COLOR_RAMPS.find((r) => r.id === rampId);
+
+                  return geographies
+                    .map((geo) => {
+                      const name = getGeoName(geo, "District");
+                      const row = getRow(geo, name);
+
+                      return {
+                        geo,
+                        row,
+                        selected: isSelectedGeo(geo, name, row),
+                      };
+                    })
+                    .filter((item) => item.selected)
+                    .map(({ geo, row }) => {
+                      const outline = getOutlineColors(
+                        colorFor(row?.[activeParamKey]),
+                        ramp,
+                      );
+
+                      return (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          fill="none"
+                          stroke={outline.stroke}
+                          strokeWidth={2.5}
+                          strokeLinejoin="round"
+                          vectorEffect="non-scaling-stroke"
+                          tabIndex={-1}
+                          focusable="false"
+                          style={{
+                            default: {
+                              outline: "none",
+                              pointerEvents: "none",
+                              filter: `drop-shadow(0 0 2px ${outline.glow})`,
+                            },
+                            hover: { outline: "none", pointerEvents: "none" },
+                            pressed: { outline: "none", pointerEvents: "none" },
+                          }}
+                        />
+                      );
+                    });
+                }}
+              </Geographies>
+            )}
+            {/* Name labels: shown for every state / district when the Labels switch is on */}
+            {showLabels && (
+              <Geographies geography={geographyUrl}>
+                {({ geographies }) =>
+                  geographies.map((geo) => {
+                    const point = getLabelPoint(geo.geometry);
+                    const name = getGeoName(
+                      geo,
+                      isDistrict ? "District" : "State / UT",
+                    );
+                    if (!point || !name) return null;
+
+                    return (
+                      <Marker key={geo.rsmKey} coordinates={point}>
+                        <text
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          pointerEvents="none"
+                          fontSize={
+                            (isDistrict ? 9 : 11) / Math.sqrt(position.zoom)
+                          }
+                          fontWeight={700}
+                          fill="#020244"
+                          stroke="#fff"
+                          strokeWidth={2.5 / Math.sqrt(position.zoom)}
+                          paintOrder="stroke"
+                          strokeLinejoin="round"
+                          style={{ userSelect: "none" }}
+                        >
+                          {name}
+                        </text>
+                      </Marker>
+                    );
+                  })
+                }
+              </Geographies>
+            )}
           </ZoomableGroup>
         </ComposableMap>
 
@@ -819,7 +960,7 @@ export default function MapCard({
 
             <div className="font-bold text-blue">
               {isValidNumber(tooltip.value)
-                ? formatIN(Number(tooltip.value))
+                ? formatValue(Number(tooltip.value))
                 : "Data unavailable"}
             </div>
           </div>
@@ -842,7 +983,7 @@ export default function MapCard({
 
               <div className="mt-0.5 text-[16px] font-extrabold leading-tight text-navy sm:text-[20px]">
                 {summary.value !== null
-                  ? formatIN(summary.value)
+                  ? formatValue(summary.value)
                   : "Data unavailable"}
               </div>
 
@@ -869,6 +1010,25 @@ export default function MapCard({
             </div>
           );
         })()}
+
+        {/* Labels on / off: top right */}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={showLabels}
+          onClick={() => setShowLabels((v) => !v)}
+          title={showLabels ? "Hide names" : "Show names"}
+          className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-[11px] font-semibold text-navy shadow-card hover:bg-soft"
+        >
+          Labels
+          <span
+            className={`relative h-4 w-7 rounded-full transition-colors ${showLabels ? "bg-navy" : "bg-[#C7CEDA]"}`}
+          >
+            <span
+              className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${showLabels ? "left-[14px]" : "left-0.5"}`}
+            />
+          </span>
+        </button>
 
         {/* Map controls: one column, bottom left */}
         <div className="absolute bottom-3 left-3 z-10 flex flex-col items-center gap-1">

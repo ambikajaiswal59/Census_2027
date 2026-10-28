@@ -1,9 +1,9 @@
-import { useState } from "react";
 import {
   CLASSIFICATION_OPTIONS,
   COLOR_RAMPS,
   DEFAULT_RAMP_ID,
 } from "../../data/dashboardConfig.js";
+import BarsIcon from "../BarsIcon.jsx";
 
 const rampGradient = (colors) =>
   `linear-gradient(to right, ${colors.join(", ")})`;
@@ -18,19 +18,23 @@ export default function LegendCard({
   rampId = DEFAULT_RAMP_ID,
   onRampChange,
   activeParamLabel = "Population",
+  showNoData = false, // true when some areas have no value: adds the grey "No data available" entry
 }) {
-  const [rampOpen, setRampOpen] = useState(false);
   const ramp = COLOR_RAMPS.find((r) => r.id === rampId) || COLOR_RAMPS[0];
 
   return (
-    <div className="flex flex-col rounded-2xl border border-navy bg-white p-3 shadow-card sm:p-4 lg:h-full">
+    <div className="flex flex-col rounded-2xl border border-line bg-white p-3 shadow-card sm:p-4 lg:h-full">
       {/* Classification */}
-      <h3 className="mb-1 flex items-center gap-1 text-[13px] font-extrabold text-navy">
-        <i className="ti ti-adjustments-horizontal text-blue" />
-        Classification
+      <h3 className="mb-1.5 flex items-center gap-1.5 text-[13px] font-extrabold text-navy">
+        <BarsIcon size="1.1em" className="shrink-0 text-blue" />
+        Classes
       </h3>
 
-      <div role="radiogroup" aria-label="Classification" className="mb-3 grid grid-cols-2 gap-x-2 lg:grid-cols-1 lg:gap-x-0">
+      <div
+        role="radiogroup"
+        aria-label="Classification"
+        className="mb-3 grid grid-cols-2 gap-x-2 rounded-xl border border-line bg-white p-3 shadow-sm lg:grid-cols-1 lg:gap-x-0"
+      >
         {CLASSIFICATION_OPTIONS.map((count) => {
           const isSelected = classCount === count;
 
@@ -71,13 +75,16 @@ export default function LegendCard({
       </div>
 
       {/* Colour list for the selected classification */}
+      <h3 className="mb-1.5 flex items-center gap-1.5 text-[13px] font-extrabold text-navy">
+        <i className="ti ti-filter shrink-0 text-blue" />
+        Legend
+      </h3>
+
       <div className="rounded-xl border border-line bg-white p-3 shadow-sm">
-        <h4 className="mb-2 flex min-w-0 items-center gap-1.5 text-[12px] font-extrabold text-navy">
-          <i className="ti ti-list-details shrink-0 text-[14px] text-blue" />
-          <span className="min-w-0 break-words">Legend : {activeParamLabel}</span>
+        <h4 className="mb-2 min-w-0 break-words text-[12px] font-extrabold text-blue">
+          {activeParamLabel}
         </h4>
 
-        
         <div className="grid grid-cols-1 gap-1.5 min-[480px]:grid-cols-2 lg:grid-cols-1">
           {ranges.map((range) => (
             <div
@@ -91,71 +98,56 @@ export default function LegendCard({
               <span className="min-w-0 break-words">{range.label}</span>
             </div>
           ))}
-        </div>
 
-        <div className="mt-2 border-t border-line pt-2 text-[10px] text-muted">
-          Grey areas indicate unavailable or hidden data.
+          {/* Only when some areas have no value for the selected field */}
+          {showNoData && (
+            <div className="flex min-w-0 items-center gap-2 text-[11px] text-text">
+              <span
+                className="h-3 w-3 shrink-0 rounded-full bg-[#E7EBF0]"
+                style={{ boxShadow: "inset 0 0 0 1px #C7CEDA" }}
+              />
+              <span className="min-w-0 break-words">No data available</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Colour ramp dropdown */}
+      {/* Colour ramps: always visible, so one click picks a ramp */}
       <h3 className="mb-1 mt-3 flex items-center gap-1 text-[13px] font-extrabold text-navy">
         <i className="ti ti-palette text-blue" />
-        Colour Ramp
+        Classes Gradation
       </h3>
 
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setRampOpen((o) => !o)}
-          aria-haspopup="listbox"
-          aria-expanded={rampOpen}
-          className="flex w-full items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-left text-[12px] font-semibold text-navy transition-colors hover:bg-[#EEEEF8]"
+      <div>
+        <ul
+          role="listbox"
+          aria-label="Colour ramp"
+          className="rounded-xl border border-line bg-white p-1"
         >
-          <span
-            className="h-3 w-12 shrink-0 rounded-full"
-            style={{ background: rampGradient(ramp.colors) }}
-          />
-          <span className="min-w-0 flex-1 truncate">{ramp.name}</span>
-          <i
-            className={`ti ti-chevron-down text-[13px] transition-transform duration-150 ${
-              rampOpen ? "rotate-180" : ""
-            }`}
-          />
-        </button>
-
-        {rampOpen && (
-          <ul
-            role="listbox"
-            aria-label="Colour ramp"
-            className="mt-1 max-h-[220px] overflow-y-auto rounded-xl border border-line bg-white p-1 shadow-sm"
-          >
-            {COLOR_RAMPS.map((r) => {
-              const isSelected = r.id === rampId;
-              return (
-                <li key={r.id} role="option" aria-selected={isSelected}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onRampChange?.(r.id);
-                      setRampOpen(false);
-                    }}
-                    className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] text-navy transition-colors hover:bg-[#EEEEF8] ${
-                      isSelected ? "bg-[#DEDEF0] font-bold" : "font-medium"
-                    }`}
-                  >
-                    <span
-                      className="h-3 w-12 shrink-0 rounded-full"
-                      style={{ background: rampGradient(r.colors) }}
-                    />
-                    <span className="min-w-0 flex-1 truncate">{r.name}</span>
-                    {isSelected && <i className="ti ti-check text-[13px]" />}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+          {COLOR_RAMPS.map((r) => {
+            const isSelected = r.id === rampId;
+            return (
+              <li key={r.id} role="option" aria-selected={isSelected}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onRampChange?.(r.id);
+                  }}
+                  className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] text-navy transition-colors hover:bg-[#EEEEF8] ${
+                    isSelected ? "bg-[#DEDEF0] font-bold" : "font-medium"
+                  }`}
+                >
+                  <span
+                    className="h-3 w-12 shrink-0 rounded-full"
+                    style={{ background: rampGradient(r.colors) }}
+                  />
+                  <span className="min-w-0 flex-1 truncate">{r.name}</span>
+                  {isSelected && <i className="ti ti-check text-[13px]" />}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { formatIN } from "../../data/dashboardConfig.js";
 
 function normalizeName(name = "") {
@@ -11,12 +11,16 @@ export default function DataTableCard({
   loading = false, // true while the full State / District list is being fetched
   onRowClick, // called with the clicked row: { state, district?, ... }
   selectedKey, // key of the row currently shown on the map (highlighted here)
+  scrollPageToRow = false, // true when the area was picked on the map: scroll the page to its row
+  selectNonce = 0, // changes on every pick, so the same area picked again scrolls again
   activeParamKey, // key of the selected built-in Parameter, e.g. "total_population"
   activeParamLabel, // its display label, e.g. "Total Population"
   uploadedColumn, // { heading, rows: [{ name, value }] } or null — the Customer
   // Input dataset currently picked in the sidebar, matched here by State / UT name.
 }) {
   const [query, setQuery] = useState("");
+  const bodyRef = useRef(null);
+  const cardRef = useRef(null);
 
   const isDistrict = level === "District";
 
@@ -69,6 +73,53 @@ export default function DataTableCard({
     });
   }, [data, query, isDistrict]);
 
+  // When an area is picked (on the map or in the table), bring its row into the
+  // middle of the table. Only the table scrolls, never the page.
+  useEffect(() => {
+    if (!selectedKey) return;
+
+    const container = bodyRef.current;
+    if (!container) return;
+
+    const el = Array.from(container.querySelectorAll("tr[data-row-key]")).find(
+      (tr) => tr.dataset.rowKey === selectedKey,
+    );
+
+    // The row may be hidden by a search: clear it so the picked row shows.
+    if (!el) {
+      if (query) setQuery("");
+      return;
+    }
+
+    // Picked on the map: the row goes to the top of the table, then the page
+    // scrolls down to the table. The table jumps at once (it is still off screen),
+    // because two smooth scrolls at the same time cancel each other in some browsers.
+    if (scrollPageToRow) {
+      container.scrollTop =
+        el.getBoundingClientRect().top -
+        container.getBoundingClientRect().top +
+        container.scrollTop;
+
+      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return;
+    }
+
+    // Picked in the table: only the table scrolls, never the page.
+    const offset =
+      el.getBoundingClientRect().top -
+      container.getBoundingClientRect().top +
+      container.scrollTop;
+
+    container.scrollTo({
+      top: Math.max(
+        0,
+        offset - container.clientHeight / 2 + el.clientHeight / 2,
+      ),
+      behavior: "smooth",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedKey, rows, selectNonce]);
+
   // Only one field is active at a time: either a built-in Parameter or an
   // uploaded Customer Input dataset. Show just that one data column.
   const showParamColumn = !uploadedColumn && Boolean(activeParamKey);
@@ -103,14 +154,17 @@ export default function DataTableCard({
 
   // Header and body are separate tables, so they share fixed column widths (%).
   const hasDataColumn = showParamColumn || showUploadedColumn;
+  // Numbers are percentages; strings are fixed sizes; null takes the space that is
+  // left. The data columns (value, % of total) have a fixed size and the name column
+  // takes the rest, so they sit against the right edge, next to the arrow column.
   const widths = isDistrict
     ? showParamColumn
-      ? [5, 20, 20, 30, 18, 7]
+      ? [5, null, "22%", "180px", "100px", "36px"]
       : hasDataColumn
         ? [5, 24, 24, 40, 7]
         : [5, 44, 44, 7]
     : showParamColumn
-      ? [5, 33, 32, 23, 7]
+      ? [5, null, "180px", "100px", "36px"]
       : hasDataColumn
         ? [5, 44, 44, 7]
         : [5, 88, 7];
@@ -118,13 +172,23 @@ export default function DataTableCard({
   const colGroup = (
     <colgroup>
       {widths.map((width, index) => (
-        <col key={index} style={{ width: `${width}%` }} />
+        <col
+          key={index}
+          style={
+            width === null
+              ? undefined
+              : { width: typeof width === "number" ? `${width}%` : width }
+          }
+        />
       ))}
     </colgroup>
   );
 
   return (
-    <div className="flex h-full border-t-4 border-t-navy max-h-[420px] min-h-0 flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(2,2,68,.10)] motion-reduce:transition-none lg:max-h-none">
+    <div
+      ref={cardRef}
+      className="flex h-full border-t-4 border-t-navy max-h-[420px] min-h-0 flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(2,2,68,.10)] motion-reduce:transition-none lg:max-h-none"
+    >
       {/* Header */}
       {/* <div className="relative z-20 flex flex-col gap-1.5 border-b border-white/10 bg-navy px-3 py-1.5 shadow-[0_3px_18px_rgba(0,0,0,.13)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4 sm:py-1.5">
         <div className="flex items-baseline justify-between gap-2 sm:block">
@@ -162,7 +226,7 @@ export default function DataTableCard({
       <div className="flex min-h-0 flex-1 flex-col overflow-x-auto">
         <div className="flex min-h-0 flex-1 flex-col min-w-[560px]">
           {/* Header strip: reserves the same scrollbar gutter as the body so columns align */}
-          <div className="relative z-10 shrink-0  overflow-y-hidden [scrollbar-gutter:stable]">
+          <div className="relative z-10 shrink-0 overflow-y-hidden bg-navy/15 [scrollbar-gutter:stable]">
             <table className="w-full table-fixed border-collapse text-xs">
               {colGroup}
               <thead>
@@ -170,7 +234,7 @@ export default function DataTableCard({
                   {columns.map((heading, index) => (
                     <th
                       key={`${heading}-${index}`}
-                      className="whitespace-nowrap border-t border-white/10 px-2.5 py-1 text-left text-[10px] uppercase tracking-[.04em] text-navy"
+                      className="overflow-hidden text-ellipsis whitespace-nowrap border-t border-white/10 px-2.5 py-1 text-left text-[10px] uppercase tracking-[.04em] text-navy"
                     >
                       {heading}
                     </th>
@@ -181,7 +245,10 @@ export default function DataTableCard({
           </div>
 
           {/* Body: only this part scrolls vertically */}
-          <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+          <div
+            ref={bodyRef}
+            className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]"
+          >
             <table className="w-full table-fixed border-collapse text-xs">
               {colGroup}
               <tbody>
@@ -207,6 +274,7 @@ export default function DataTableCard({
                     return (
                       <tr
                         key={rowKey}
+                        data-row-key={rowKey}
                         tabIndex={0}
                         aria-selected={isSelected}
                         onClick={() => onRowClick?.(row)}

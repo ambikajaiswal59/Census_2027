@@ -158,6 +158,35 @@ async function parseSheet(file, level) {
     throw new Error("No data rows were found below the column headings.");
   }
 
+  // Dataset columns accept numbers only (commas as thousands separators are fine,
+  // e.g. 1,25,000). Any text, symbol or percent sign rejects the whole file.
+  const isNumeric = (cell) =>
+    /^[+-]?(\d+|\d{1,3}(,\d{2,3})+)(\.\d+)?([eE][+-]?\d+)?$|^[+-]?\.\d+$/.test(
+      cell,
+    );
+  const badCells = [];
+
+  rows.forEach((row) => {
+    for (let i = config.keyColumns; i < REQUIRED_COLUMNS; i += 1) {
+      if (row[i] && !isNumeric(row[i])) {
+        badCells.push(
+          `${row.slice(0, config.keyColumns).filter(Boolean).join(", ") || "A row"} › ${columns[i]}: "${row[i]}"`,
+        );
+      }
+    }
+  });
+
+  if (badCells.length > 0) {
+    const shown = badCells.slice(0, 3).join("; ");
+    const more = badCells.length > 3 ? ` and ${badCells.length - 3} more` : "";
+
+    throw new Error(
+      `Only numeric values are allowed in the dataset columns. Found text in ${badCells.length} ${
+        badCells.length === 1 ? "cell" : "cells"
+      } (${shown}${more}). Please correct the file and upload it again.`,
+    );
+  }
+
   if (rows.length > MAX_ROWS) {
     throw new Error(
       `The sheet has ${rows.length.toLocaleString()} rows. The maximum is ${MAX_ROWS.toLocaleString()}.`,
@@ -292,7 +321,7 @@ export default function UploadModal() {
           <div
             role="radiogroup"
             aria-label="Upload level"
-            className="mb-3 grid grid-cols-2 gap-1 rounded-full border border-line bg-soft p-1"
+            className="mb-3 grid grid-cols-2 gap-0 overflow-hidden rounded-full border border-line bg-soft p-0"
           >
             {LEVEL_TABS.map((tab) => {
               const isActive = uploadLevel === tab.value;
@@ -307,7 +336,7 @@ export default function UploadModal() {
                     setUploadLevel(tab.value);
                     setError("");
                   }}
-                  className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold transition-colors duration-150 ${
+                  className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-[12px] font-bold transition-colors duration-150 ${
                     isActive ? "bg-navy text-white" : "text-navy hover:bg-white"
                   }`}
                 >
@@ -318,34 +347,57 @@ export default function UploadModal() {
             })}
           </div>
 
-          {/* Step 1: download the template */}
-          <div className="mb-3 flex items-start gap-3 rounded-xl border border-line bg-soft p-3">
+          {/* Step 1: download the template. Same layout as step 2: the heading sits
+              outside, and the box below it matches the upload box. */}
+          <p className="mb-1.5 flex items-center gap-2 text-[12px] font-bold text-navy">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-bold text-white">
               1
             </span>
+            Download the template
+          </p>
 
-            <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-bold text-navy">
-                Download the template
-              </p>
-              <p className="mt-0.5 text-[11px] leading-snug text-muted">
-                {uploadLevel === DISTRICT_LEVEL
-                  ? "All districts and their State / UT are already listed; fill in Dataset 1-3 next to them, then upload the completed file below."
-                  : "All States / UTs are already listed; fill in Dataset 1-3 next to them, then upload the completed file below."}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleTemplate}
-              disabled={isPreparing}
-              className="flex shrink-0 disabled:cursor-wait disabled:opacity-60 items-center gap-1.5 rounded-[9px] border border-line bg-white px-2.5 py-1.5 text-[12px] font-semibold text-navy hover:bg-soft"
-            >
-              <i
-                className={`ti ${isPreparing ? "ti-loader-2 animate-spin" : "ti-download"}`}
-              />
-              {isPreparing ? "Preparing…" : "Template"}
-            </button>
+          <div
+            role="button"
+            tabIndex={isPreparing ? -1 : 0}
+            aria-disabled={isPreparing}
+            aria-label="Download the Excel template"
+            onClick={() => {
+              if (!isPreparing) handleTemplate();
+            }}
+            onKeyDown={(event) => {
+              if (
+                !isPreparing &&
+                (event.key === "Enter" || event.key === " ")
+              ) {
+                event.preventDefault();
+                handleTemplate();
+              }
+            }}
+            className={`mb-3 flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#C7CEDA] bg-soft px-4 py-5 text-center transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue ${
+              isPreparing
+                ? "cursor-wait opacity-60"
+                : "cursor-pointer hover:border-blue hover:bg-white"
+            }`}
+          >
+            <i
+              className={`ti ${
+                isPreparing ? "ti-loader-2 animate-spin" : "ti-download"
+              } text-[28px] text-navy`}
+            />
+            <p className="text-[13px] font-bold text-navy">
+              {isPreparing
+                ? "Preparing the template…"
+                : "Download the Excel template"}
+            </p>
+            <p className="max-w-[300px] text-[12px] leading-snug text-muted">
+              {uploadLevel === DISTRICT_LEVEL
+                ? "All districts and their State / UT are already listed; fill in Dataset 1-3 next to them."
+                : "All States / UTs are already listed; fill in Dataset 1-3 next to them."}
+            </p>
+            <p className="text-[11px] text-muted">
+              <span className="font-semibold text-blue">Click</span> to download
+              · .xlsx
+            </p>
           </div>
 
           <p className="mb-1.5 flex items-center gap-2 text-[12px] font-bold text-navy">
@@ -380,7 +432,7 @@ export default function UploadModal() {
               }
             }}
             onDrop={handleDrop}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-9 text-center transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue ${
+            className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed px-4 py-5 text-center transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue ${
               isDragging
                 ? "scale-[1.01] border-blue bg-[#EEF3FF]"
                 : "border-[#C7CEDA] bg-soft hover:border-blue hover:bg-white"
@@ -396,7 +448,7 @@ export default function UploadModal() {
             ) : (
               <>
                 <i
-                  className={`ti ti-cloud-upload text-[34px] transition-transform duration-200 ${
+                  className={`ti ti-cloud-upload text-[28px] transition-transform duration-200 ${
                     isDragging ? "-translate-y-1 text-blue" : "text-navy"
                   }`}
                 />
@@ -409,7 +461,7 @@ export default function UploadModal() {
                   or <span className="font-semibold text-blue">browse</span> to
                   choose a file
                 </p>
-                <p className="mt-1 text-[11px] text-muted">
+                <p className="text-[11px] text-muted">
                   .xlsx, .xls or .csv · up to {MAX_SIZE_MB} MB
                 </p>
               </>

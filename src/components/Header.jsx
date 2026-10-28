@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useUpload } from "../context/UploadContext.jsx";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+// Only the small meta file (not the full census tables), so the year follows the stored data.
+import censusMeta from "../data/census/meta.json";
 import { scrollToSection } from "../utils.js";
 
 const navLinks = [
@@ -14,12 +15,15 @@ const navLinks = [
   },
 ];
 
+// The census year is shown on this page only.
+const DASHBOARD_PATH = "/population-dashboard";
+
 export default function Header({ onScrollToCensus, onScrollToDirectory }) {
   const [showMobileRow, setShowMobileRow] = useState(true);
   const [adminOpen, setAdminOpen] = useState(false);
   const adminRef = useRef(null);
   const navigate = useNavigate();
-  const { uploadEnabled, openModal } = useUpload();
+  const showCensusYear = useLocation().pathname === DASHBOARD_PATH;
 
   useEffect(() => {
     let lastY = 0;
@@ -90,7 +94,17 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
     // Not sticky any more: Layout keeps the header on top and scrolls the area below it.
     <header className="relative z-20 w-full shrink-0 bg-navy shadow-[0_3px_18px_rgba(0,0,0,.13)]">
       <div className="mx-auto w-full max-w-wrap px-3 sm:px-6">
-        <nav className="flex min-h-[62px] items-center justify-between gap-2 py-2 sm:min-h-[70px] sm:py-0">
+        <nav className="relative flex min-h-[62px] items-center justify-between gap-2 py-2 sm:min-h-[70px] sm:py-0">
+
+          {/* Census year, centred in the header (large screens, dashboard page only) */}
+          {showCensusYear && (
+            <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
+              <span className="whitespace-nowrap  text-[25px] font-bold tracking-wide text-[#e4c411]">
+                Census <span className="font-extrabold">{censusMeta.year}</span>
+              </span>
+            </div>
+          )}
+
           {/* Logo + name: shrinks (never pushes the buttons off-screen) on small phones */}
           <Link
             to="/"
@@ -127,20 +141,6 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
                 </a>
               ))}
             </div>
-
-            {/* Only visible on pages that call useEnableUpload() */}
-            {uploadEnabled && (
-              <button
-                type="button"
-                onClick={openModal}
-                aria-label="Upload Excel sheet"
-                title="Upload Excel sheet"
-                className="flex items-center gap-1.5 whitespace-nowrap rounded-[7px] border border-white/30 bg-white/5 px-2 py-1.5 text-[12px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 active:translate-y-0 active:scale-95 motion-reduce:transform-none sm:px-3.5 sm:py-2 sm:text-[15px]"
-              >
-                <i className="ti ti-upload" />
-                <span className="hidden sm:inline">Upload</span>
-              </button>
-            )}
 
             <a
               className="
@@ -229,6 +229,12 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
                   {link.label}
                 </a>
               ))}
+
+              {showCensusYear && (
+                <span className="whitespace-nowrap  px-2.5 py-0.5 text-[11px] font-semibold text-[#e4c411]">
+                  Census {censusMeta.year}
+                </span>
+              )}
             </div>
           </div>
         </div>

@@ -21,31 +21,31 @@ export const DEFAULT_CLASSIFICATION = 5;
 export const COLOR_RAMPS = [
   {
     id: "yellows",
-    name: "Yellows",
+    name: "Yellow",
     colors: ["#FFF7BF", "#FFE66D", "#FFC31F", "#D99100", "#7A4A00"],
     outline: { onDark: "#6FE0FF", onLight: "#3B0A6B" },
   },
   {
     id: "blues",
-    name: "Blues",
+    name: "Blue",
     colors: ["#DEEBF7", "#9ECAE1", "#4292C6", "#2171B5", "#08306B"],
     outline: { onDark: "#FFB347", onLight: "#7A2E00" },
   },
   {
     id: "greens",
-    name: "Greens",
+    name: "Green",
     colors: ["#E5F5E0", "#A1D99B", "#41AB5D", "#238B45", "#00441B"],
     outline: { onDark: "#C98BFF", onLight: "#7A0F3A" },
   },
   {
     id: "purples",
-    name: "Purples",
+    name: "Purple",
     colors: ["#F2E7FA", "#D0B0E8", "#A56FD0", "#7B3FB0", "#3F0F72"],
     outline: { onDark: "#7CF0B5", onLight: "#0B4A2E" },
   },
   {
     id: "reds",
-    name: "Reds",
+    name: "Red",
     colors: ["#FEE5D9", "#FCAE91", "#FB6A4A", "#DE2D26", "#99000D"],
     outline: { onDark: "#FFE680", onLight: "#5C0A1E" },
   },
@@ -268,6 +268,85 @@ export function getDataRanges(
     return {
       id: `d${count}-${index + 1}`,
       label,
+      min,
+      max,
+      color: colors[index],
+    };
+  });
+}
+
+// Classification ranges for a dataset the user uploaded. Unlike the census
+// parameters it has no known scale, so the classes come only from its own
+// values (quantiles), however few they are, and they keep decimals.
+export function getCustomRanges(
+  values,
+  count = DEFAULT_CLASSIFICATION,
+  rampId = DEFAULT_RAMP_ID,
+) {
+  const nums = (values || [])
+    .map((value) =>
+      value === null || value === undefined || value === ""
+        ? NaN
+        : Number(value),
+    )
+    .filter((value) => Number.isFinite(value) && value >= 0)
+    .sort((a, b) => a - b);
+
+  if (nums.length === 0) return [];
+
+  const ramp = COLOR_RAMPS.find((item) => item.id === rampId) || COLOR_RAMPS[0];
+  const allColors =
+    count === 3
+      ? [ramp.colors[0], ramp.colors[2], ramp.colors[4]]
+      : ramp.colors;
+
+  // Three significant digits keep cut points tidy without losing small values.
+  const tidy = (value) => (value === 0 ? 0 : Number(value.toPrecision(3)));
+  const fmt = (value) =>
+    Number.isInteger(value) || Math.abs(value) >= 100
+      ? formatIN(value)
+      : String(Number(value.toFixed(2)));
+
+  const cuts = [];
+
+  for (let index = 1; index < count; index += 1) {
+    const quantile =
+      nums[
+        Math.min(nums.length - 1, Math.floor((nums.length * index) / count))
+      ];
+    const cut = tidy(quantile);
+
+    if (cut > (cuts[cuts.length - 1] ?? nums[0])) {
+      cuts.push(cut);
+    }
+  }
+
+  // Every value is the same: one class.
+  if (cuts.length === 0) {
+    return [
+      {
+        id: `u${count}-1`,
+        label: fmt(nums[0]),
+        min: 0,
+        max: Infinity,
+        color: allColors[Math.floor(allColors.length / 2)],
+      },
+    ];
+  }
+
+  const colors = allColors.slice(0, cuts.length + 1);
+
+  return [0, ...cuts].map((min, index) => {
+    const max = cuts[index] ?? Infinity;
+
+    return {
+      id: `u${count}-${index + 1}`,
+      label:
+        index === 0
+          ? `< ${fmt(max)}`
+          : max === Infinity
+            ? `> ${fmt(min)}`
+            : `${fmt(min)} – ${fmt(max)}`,
       min,
       max,
       color: colors[index],

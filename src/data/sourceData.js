@@ -1,5 +1,17 @@
 export const sourceData = [
   {
+    title: "Don't release census data to press: RGI to states, UT ",
+    source: "Hindustan TImes",
+    date: "27 October, 2026",
+    icon: "ti-building-bank",
+    summary:
+      "Census 2027 Phase II (population enumeration) is likely to begin in Delhi on January 10, with self-enumeration first and door-to-door visits by enumerators after that. Officials say the dates are still tentative.",
+    points: [
+      "The Registrar General of India (RGI) has directed all states and Union Territories not to use or release any data or population figures collected during Census 2027 to the press. In a communique to chief secretaries, Registrar General Mrityunjay Kumar Narayan said census information is confidential and protected under the Census Act, 1948, which bars census records from being opened to inspection or used as evidence. Provisional population figures and any data from household schedules must not be released to the press or any other authority until further instructions are issued. Narayan added that the census is being conducted digitally, with enumerators using their own mobile phones to collect and submit data. Data collected on paper must be entered on the portal within seven days.",
+    ],
+    link: "/images/census-hindustantimes-oct27.jpeg",
+  },
+  {
     title: "Census 2nd phase likely to start Jan 10",
     source: "Hindustan TImes",
     date: "23 October, 2026",
@@ -39,19 +51,6 @@ export const sourceData = [
       "Provisional Census data to be available by March-April 2027: J&K and Ladakh Census chief ",
     source: "The Hindu",
     date: "7 OCtober, 2026",
-    icon: "ti-news",
-    summary:
-      "The Registrar General flags that Population Enumeration leaves far less room for error than Phase I, and calls enumerator training critical.",
-    points: [
-      " Ladakh completed entire Census exercise on October 5, first among all States and UTs; snow-bound areas of Himalayan States also completed the exercise; many people confused Census with SIR exercise, says J&K Census chief",
-    ],
-    link: "/images/census-hindu-oct7.jpeg",
-  },
-  {
-    title:
-      "Provisional Census data to be available by March-April 2027: J&K and Ladakh Census chief ",
-    source: "The Hindu",
-    date: "13 August  , 2026",
     icon: "ti-news",
     summary:
       "The Registrar General flags that Population Enumeration leaves far less room for error than Phase I, and calls enumerator training critical.",
