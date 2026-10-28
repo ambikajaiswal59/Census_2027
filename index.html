@@ -20,7 +20,19 @@
   <meta name="robots" content="index, follow" />
 
   <!-- Canonical -->
-  <link rel="canonical" href="http://mlinfomapcensus2027.com/" />
+  <link rel="canonical" href="https://mlinfomapcensus2027.com/" />
+
+  <!-- Favicon (theme-aware) -->
+  <!-- Fallback for browsers that ignore the media attribute (e.g. Safari) -->
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+
+  <!-- Light browser theme: black icon -->
+  <link rel="icon" type="image/svg+xml" href="/images/ML_Icon_Black.svg"
+    media="(prefers-color-scheme: light)" />
+
+  <!-- Dark browser theme: white icon -->
+  <link rel="icon" type="image/svg+xml" href="/images/ML_Icon_white.svg"
+    media="(prefers-color-scheme: dark)" />
 
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-X74XGCN2JZ"></script>
@@ -44,12 +56,15 @@
   <meta property="og:description"
     content="Explore India's interactive 2027 census map data, administrative boundaries, and geographic information with ML Infomap." />
 
-  <meta property="og:url" content="http://mlinfomapcensus2027.com/" />
+  <meta property="og:url" content="https://mlinfomapcensus2027.com/" />
 
   <meta property="og:site_name" content="ML Infomap Census 2027" />
 
-  <meta property="og:image" content="http://mlinfomapcensus2027.com/images/ML_Info_Icon.png" />
-
+  <!-- Share image: 1200x630 with a solid background (upload to /public/images/) -->
+  <meta property="og:image" content="https://mlinfomapcensus2027.com/images/ML_Info_OG.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
   <meta property="og:image:alt" content="ML Infomap India's 2027 Census Map Data" />
 
   <!-- Twitter / X -->
@@ -60,7 +75,7 @@
   <meta name="twitter:description"
     content="Explore India's interactive 2027 census map data, administrative boundaries, and geographic information with ML Infomap." />
 
-  <meta name="twitter:image" content="http://mlinfomapcensus2027.com/images/ML_Info_Icon.png" />
+  <meta name="twitter:image" content="https://mlinfomapcensus2027.com/images/ML_Info_OG.png" />
 
   <meta name="twitter:image:alt" content="ML Infomap India's 2027 Census Map Data" />
 
@@ -70,7 +85,7 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "ML Infomap Census 2027",
-      "url": "http://mlinfomapcensus2027.com/",
+      "url": "https://mlinfomapcensus2027.com/",
       "description": "India's interactive 2027 census map data, administrative boundaries, and geographic information."
     }
   </script>
@@ -86,9 +101,6 @@
 
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css" />
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="/images/favicon.png" />
 
 </head>
 
