@@ -45,6 +45,24 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
             </p>
 
             {/* Explore Directory button — CHANGED: navy bg + saffron text */}
+            {/* <div className="mt-[25px] flex flex-wrap gap-2.5">
+              <Button
+                href="/population-dashboard"
+                variant="primary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/population-dashboard");
+                }}
+              >
+                Explore Directory{" "}
+                <span className="ml-0.5 inline-block transition-transform group-hover:translate-x-1">
+                  →
+                </span>
+              </a>
+            </div>
+
+
+          </div> */}
             <div className="mt-[25px] flex flex-wrap gap-2.5">
               <a
                 href="#directory"

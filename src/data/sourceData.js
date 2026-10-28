@@ -1,41 +1,57 @@
 export const sourceData = [
   {
-    title:
-      'Narrower margin for error in Census second phase: training vital, says Registrar General',
-    source: 'The Hindu',
-    date: 'Aug 2026',
-    icon: 'ti-news',
+    title: "Don't release census data to press: RGI to states, UT ",
+    source: "Hindustan TImes",
+    date: "27 October, 2026",
+    icon: "ti-building-bank",
     summary:
-      'The Registrar General flags that Population Enumeration leaves far less room for error than Phase I, and calls enumerator training critical.',
+      "Census 2027 Phase II (population enumeration) is likely to begin in Delhi on January 10, with self-enumeration first and door-to-door visits by enumerators after that. Officials say the dates are still tentative.",
     points: [
-      'Population Enumeration (Phase II) captures individual-level details, so mistakes are harder to correct later than in the household-level House Listing Operation',
-      'The Registrar General urged states to treat enumerator and supervisor training as central to data accuracy, not a formality',
-      'Officials were asked to strengthen field supervision and real-time monitoring as the second phase rolls out',
-      'The emphasis on training follows the broader digital-first approach adopted for Census 2027',
+      "The Registrar General of India (RGI) has directed all states and Union Territories not to use or release any data or population figures collected during Census 2027 to the press. In a communique to chief secretaries, Registrar General Mrityunjay Kumar Narayan said census information is confidential and protected under the Census Act, 1948, which bars census records from being opened to inspection or used as evidence. Provisional population figures and any data from household schedules must not be released to the press or any other authority until further instructions are issued. Narayan added that the census is being conducted digitally, with enumerators using their own mobile phones to collect and submit data. Data collected on paper must be entered on the portal within seven days.",
     ],
-    link: 'https://www.thehindu.com/news/national/narrower-margin-for-error-in-census-second-phase-training-vital-registrar-general-says/article71469463.ece',
+    link: "/images/census-hindustantimes-oct27.jpeg",
   },
   {
-    title: 'Preparatory activities for Census 2027',
-    source: 'PIB',
-    date: '12 Aug 2026',
-    icon: 'ti-building-bank',
+    title: "Census 2nd phase likely to start Jan 10",
+    source: "Hindustan TImes",
+    date: "23 October, 2026",
+    icon: "ti-building-bank",
+    summary:
+      "Census 2027 Phase II (population enumeration) is likely to begin in Delhi on January 10, with self-enumeration first and door-to-door visits by enumerators after that. Officials say the dates are still tentative.",
+    points: [
+      "Phase II is likely to run in Delhi with self-enumeration from January 10 to 24, door-to-door visits from January 25 to February 28 and a revisional round from March 1 to 5, after Phase I house-listing was completed with over 50,000 enumerators. For the first time in independent India, enumerators will ask a question on caste, among 40 notified questions (11 more than in 2011). Enumerators will be trained at the district level, police will provide security in sensitive areas, awareness campaigns will assure residents their data stays confidential, and results are expected to take two to three years.",
+    ],
+    link: "/images/census-hindustantimes-oct23.jpeg",
+  },
+  {
+    title: "SC seeks caste verification SOP under Census",
+    source: "The Hindu",
+    date: "13 October, 2026",
+    icon: "ti-building-bank",
     summary:
       "A government update to the Rajya Sabha on Phase I's completion status and the Phase II schedule for Ladakh and the snow-bound regions.",
     points: [
-      'Houselisting & Housing Census (Phase I) was already completed in 31 States/UTs, with the rest due by September 2026',
-      'Population Enumeration for Ladakh and the snow-bound areas of J&K, Himachal Pradesh and Uttarakhand runs 1–30 September 2026, with a revisional round from 1–5 October 2026',
-      'Self-enumeration for these regions was open from 17–31 August 2026',
-      '₹4,102 crore has been released to States/UTs so far for training, manpower assistance, technical infrastructure and honorarium payments',
-      'The Census Management and Monitoring System (CMMS) portal and mobile apps power the digital data collection',
+      "The Supreme Court on Monday asked the Centre to spell out the mechanism available under the Census 2027 to identify fake claims by persons belonging to other backward classes, scheduled castes and scheduled tribes, observing that legitimate rights of genuine people cannot be taken away.",
     ],
-    link: 'https://www.pib.gov.in/PressReleasePage.aspx?PRID=2298340&reg=48&lang=2',
+    link: "/images/census-hindu-oct13.jpeg",
   },
   {
-    title: 'First phase of Census 2027 to take place between April–September',
-    source: 'Livemint',
-    date: 'Jan 2026',
-    icon: 'ti-calendar-event',
+    title: "Mizoram to count refugees seperately seperately during census.",
+    source: "The Hindu",
+    date: "12 October, 2026",
+    icon: "ti-calendar-event",
+    summary: "",
+    points: [
+      "Decision follows a meeting to review preparations for the second phase of excercise; 38,213 refugees from Bangladesh, Myanmar and Manipur were recorded in the state as August 20 ",
+    ],
+    link: "/images/census-hindu-oct12.jpeg",
+  },
+  {
+    title:
+      "Provisional Census data to be available by March-April 2027: J&K and Ladakh Census chief ",
+    source: "The Hindu",
+    date: "7 OCtober, 2026",
+    icon: "ti-news",
     summary:
       'The MHA notification setting out the Houselisting & Housing Census window and the self-enumeration option.',
     points: [
@@ -47,35 +63,4 @@ export const sourceData = [
     ],
     link: 'https://www.livemint.com/news/india/census-2027-first-phase-to-take-place-between-april-september-self-enumeration-option-to-be-available-11767795159267.html',
   },
-  {
-    title: 'Census of India 2027 — Spotlight',
-    source: 'India.gov.in',
-    date: 'National Portal',
-    icon: 'ti-world',
-    summary:
-      "The National Portal's overview of Census 2027 as India's 16th Census and its first fully digital count.",
-    points: [
-      'Census 2027 is the 16th Census of India and the 8th since Independence',
-      'It is conducted by the Office of the Registrar General & Census Commissioner of India under the Ministry of Home Affairs',
-      'The exercise is carried out digitally for the first time, using mobile apps for enumerators and an online option for self-enumeration',
-      'The portal brings together official notifications, schedules and citizen-facing resources for the Census in one place',
-    ],
-    link: 'https://www.india.gov.in/spotlight/details/census-of-india-2027',
-  },
-  {
-    title: 'Registrar General addresses press conference on Census-2027',
-    source: 'PIB',
-    date: 'Press briefing',
-    icon: 'ti-microphone-2',
-    summary:
-      "The Census Commissioner assures citizens their individual data stays confidential and clarifies how the caste question will be handled.",
-    points: [
-      'Under Section 15 of the Census Act, individual data collected cannot be shared under the RTI Act, used as court evidence, or shared with any organisation',
-      'Only aggregated statistical data is used for tabulation and policymaking — never individual records',
-      'Caste-related questions will be finalised after further discussion and collected during Population Enumeration, the second phase',
-      'Citizens were urged to share accurate information, since individual data cannot be used to claim or deny benefit under any government scheme',
-      'Self-enumeration lets people submit their details digitally in the 15-day window before house-to-house listing begins',
-    ],
-    link: 'https://www.pib.gov.in/PressReleaseDetail.aspx?PRID=2246847&reg=3&lang=1',
-  },
-]
+];
