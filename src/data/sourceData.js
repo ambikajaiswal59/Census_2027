@@ -21,7 +21,7 @@ export const sourceData = [
     points: [
       "Phase II is likely to run in Delhi with self-enumeration from January 10 to 24, door-to-door visits from January 25 to February 28 and a revisional round from March 1 to 5, after Phase I house-listing was completed with over 50,000 enumerators. For the first time in independent India, enumerators will ask a question on caste, among 40 notified questions (11 more than in 2011). Enumerators will be trained at the district level, police will provide security in sensitive areas, awareness campaigns will assure residents their data stays confidential, and results are expected to take two to three years.",
     ],
-    link: "/images/census-hindustantimes-oct23.jpeg",
+    link: "/images/census-hindustantimes-oct23.jpg",
   },
   {
     title: "SC seeks caste verification SOP under Census",
@@ -61,6 +61,6 @@ export const sourceData = [
       'The exercise — originally due in 2021 — was postponed because of the COVID-19 pandemic',
       'Census 2027 will record caste data as part of the enumeration phase',
     ],
-    link: 'https://www.livemint.com/news/india/census-2027-first-phase-to-take-place-between-april-september-self-enumeration-option-to-be-available-11767795159267.html',
+    link: '/images/census-hindu-oct7.jpeg',
   },
 ];
