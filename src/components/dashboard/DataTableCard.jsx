@@ -159,12 +159,12 @@ export default function DataTableCard({
   // takes the rest, so they sit against the right edge, next to the arrow column.
   const widths = isDistrict
     ? showParamColumn
-      ? [5, null, "22%", "180px", "100px", "36px"]
+      ? [5, null, "22%", "150px", "90px", "28px"]
       : hasDataColumn
         ? [5, 24, 24, 40, 7]
         : [5, 44, 44, 7]
     : showParamColumn
-      ? [5, null, "180px", "100px", "36px"]
+      ? [5, null, "150px", "90px", "28px"]
       : hasDataColumn
         ? [5, 44, 44, 7]
         : [5, 88, 7];
@@ -187,7 +187,7 @@ export default function DataTableCard({
   return (
     <div
       ref={cardRef}
-      className="flex h-full border-t-4 border-t-navy max-h-[420px] min-h-0 flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(2,2,68,.10)] motion-reduce:transition-none lg:max-h-none"
+      className="relative z-10 flex h-full !border-t-4 !border-t-[#020244] max-h-[420px] min-h-0 flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(2,2,68,.10)] motion-reduce:transition-none lg:max-h-none"
     >
       {/* Header */}
       {/* <div className="relative z-20 flex flex-col gap-1.5 border-b border-white/10 bg-navy px-3 py-1.5 shadow-[0_3px_18px_rgba(0,0,0,.13)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4 sm:py-1.5">
@@ -226,7 +226,7 @@ export default function DataTableCard({
       <div className="flex min-h-0 flex-1 flex-col overflow-x-auto">
         <div className="flex min-h-0 flex-1 flex-col min-w-[560px]">
           {/* Header strip: reserves the same scrollbar gutter as the body so columns align */}
-          <div className="relative z-10 shrink-0 overflow-y-hidden bg-navy/15 [scrollbar-gutter:stable]">
+          <div className="relative z-10 shrink-0 overflow-y-hidden bg-[#020244]/10 [scrollbar-gutter:stable]">
             <table className="w-full table-fixed border-collapse text-xs">
               {colGroup}
               <thead>
@@ -234,7 +234,7 @@ export default function DataTableCard({
                   {columns.map((heading, index) => (
                     <th
                       key={`${heading}-${index}`}
-                      className="overflow-hidden text-ellipsis whitespace-nowrap border-t border-white/10 px-2.5 py-1 text-left text-[10px] uppercase tracking-[.04em] text-navy"
+                      className="overflow-hidden text-ellipsis whitespace-nowrap px-2.5 py-1 text-left text-[10px] uppercase tracking-[.04em] text-navy"
                     >
                       {heading}
                     </th>
