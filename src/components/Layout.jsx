@@ -15,7 +15,7 @@ export default function Layout() {
             data-scroll-root lets the header's mobile row react to this scrolling. */}
         <div
           data-scroll-root
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-gutter:stable]"
         >
           <div className="flex-1">
             <Outlet />

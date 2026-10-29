@@ -92,14 +92,13 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
 
   return (
     // Not sticky any more: Layout keeps the header on top and scrolls the area below it.
-    <header className="relative z-20 w-full shrink-0 bg-navy shadow-[0_3px_18px_rgba(0,0,0,.13)]">
+    <header className="relative z-20 w-full shrink-0 overflow-y-hidden bg-navy [scrollbar-gutter:stable] shadow-[0_3px_18px_rgba(0,0,0,.13)]">
       <div className="mx-auto w-full max-w-wrap px-3 sm:px-6">
         <nav className="relative flex min-h-[62px] items-center justify-between gap-2 py-2 sm:min-h-[70px] sm:py-0">
-
           {/* Census year, centred in the header (large screens, dashboard page only) */}
           {showCensusYear && (
             <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
-              <span className="whitespace-nowrap  text-[25px] font-bold tracking-wide text-[#e4c411]">
+              <span className="whitespace-nowrap   px-4 py-1 text-[25px] font-semibold tracking-wide text-[#e4c411]">
                 Census <span className="font-extrabold">{censusMeta.year}</span>
               </span>
             </div>
@@ -231,7 +230,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               ))}
 
               {showCensusYear && (
-                <span className="whitespace-nowrap  px-2.5 py-0.5 text-[11px] font-semibold text-[#e4c411]">
+                <span className="whitespace-nowrap rounded-full border border-[#e4c411]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[#e4c411]">
                   Census {censusMeta.year}
                 </span>
               )}

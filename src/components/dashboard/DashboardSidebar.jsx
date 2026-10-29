@@ -216,7 +216,7 @@ export default function DashboardSidebar({
       </div>
 
       <div className="flex flex-col">
-        <h3 className="mb-1 flex shrink-0 items-center gap-1.5 text-[13px] font-extrabold text-navy">
+        <h3 className="mb-1 mt-2 flex shrink-0 items-center gap-1 text-[13px] font-extrabold text-navy">
           <i className="ti ti-adjustments-horizontal text-blue" />
           Demographic: Key Parameters
         </h3>
@@ -225,7 +225,7 @@ export default function DashboardSidebar({
           <div
             role="tablist"
             aria-label="Parameter group"
-            className="mb-1 grid shrink-0 grid-cols-3 gap-0 overflow-hidden rounded-full border border-line bg-soft p-0"
+            className="mb-4 mt-2 grid shrink-0 grid-cols-3 gap-0 overflow-hidden rounded-full border border-line bg-soft p-0"
           >
             {groups.map((group) => {
               const isActive = group === activeGroup;
@@ -237,8 +237,10 @@ export default function DashboardSidebar({
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => switchGroup(group)}
-                  className={`rounded-full px-2 py-2 text-[11px] font-bold transition-colors duration-150 ${
-                    isActive ? "bg-navy text-white" : "text-navy hover:bg-white"
+                  className={`rounded-full px-2 py-1 text-[11px] font-bold transition-colors duration-150 ${
+                    isActive
+                      ? "bg-[#8fc4e7a2] text-navy"
+                      : "text-navy hover:bg-white"
                   }`}
                 >
                   {group}
@@ -305,13 +307,13 @@ export default function DashboardSidebar({
         </div>
 
         <div className="mt-0 flex flex-col border-t border-line pt-1">
-          <h3 className="mb-0 mt-1 flex shrink-0 items-center gap-1.5 text-[13px] font-extrabold text-navy">
+          <h3 className="mb-0 mt-3 flex shrink-0 items-center gap-1.5 text-[13px] font-extrabold text-navy">
             <MapPinBaseIcon size="1.15em" className="shrink-0 text-blue mt-0" />
             Custom Map Builder
           </h3>
 
           {/* Sub-heading: always shown, before and after a file is uploaded */}
-          <p className="mt-1.5 text-[11px] leading-snug text-muted">
+          <p className="mt-2 text-[11px] leading-snug text-muted">
             Upload your own dataset and visualize it geographically
           </p>
 
@@ -387,7 +389,7 @@ export default function DashboardSidebar({
                 ? `A file is already uploaded for ${uiLevel}`
                 : undefined
             }
-            className="mt-2 flex w-full shrink-0 items-center justify-center gap-1.5 rounded-[9px] border border-navy/30 bg-white px-3 py-1.5 text-[12px] font-semibold text-navy transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#EEEEF8] hover:shadow-[0_6px_14px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#F1F3F7] disabled:text-[#9AA6B8] disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:bg-[#F1F3F7] disabled:active:scale-100 motion-reduce:transform-none sm:text-[13px]"
+            className="mt-3 flex w-full shrink-0 items-center justify-center gap-1.5 rounded-[9px] border border-navy/30 bg-white px-3 py-1.5 text-[12px] font-semibold text-navy transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#EEEEF8] hover:shadow-[0_6px_14px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#F1F3F7] disabled:text-[#9AA6B8] disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:bg-[#F1F3F7] disabled:active:scale-100 motion-reduce:transform-none sm:text-[13px]"
           >
             <i className="ti ti-upload" />
             Upload Excel

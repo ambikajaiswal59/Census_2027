@@ -11,7 +11,13 @@ export const CENSUS_LABEL = censusMeta.label;
 export const levelOptions = ["State / UT", "District"];
 
 // Parameters generated from the census configuration.
-const parameterOptions = censusMeta.parameters;
+// The word "Total" is dropped from every parameter name ("Total Households" -> "Households").
+const dropTotal = (text = "") => text.replace(/\bTotal\s+/g, "");
+const parameterOptions = censusMeta.parameters.map((p) => ({
+  ...p,
+  label: dropTotal(p.label),
+  shortLabel: dropTotal(p.shortLabel),
+}));
 
 // Map classification options.
 export const CLASSIFICATION_OPTIONS = [5, 3];
@@ -21,31 +27,31 @@ export const DEFAULT_CLASSIFICATION = 5;
 export const COLOR_RAMPS = [
   {
     id: "yellows",
-    name: "Yellow",
+    name: "Yellows",
     colors: ["#FFF7BF", "#FFE66D", "#FFC31F", "#D99100", "#7A4A00"],
     outline: { onDark: "#6FE0FF", onLight: "#3B0A6B" },
   },
   {
     id: "blues",
-    name: "Blue",
+    name: "Blues",
     colors: ["#DEEBF7", "#9ECAE1", "#4292C6", "#2171B5", "#08306B"],
     outline: { onDark: "#FFB347", onLight: "#7A2E00" },
   },
   {
     id: "greens",
-    name: "Green",
+    name: "Greens",
     colors: ["#E5F5E0", "#A1D99B", "#41AB5D", "#238B45", "#00441B"],
     outline: { onDark: "#C98BFF", onLight: "#7A0F3A" },
   },
   {
     id: "purples",
-    name: "Purple",
+    name: "Purples",
     colors: ["#F2E7FA", "#D0B0E8", "#A56FD0", "#7B3FB0", "#3F0F72"],
     outline: { onDark: "#7CF0B5", onLight: "#0B4A2E" },
   },
   {
     id: "reds",
-    name: "Red",
+    name: "Reds",
     colors: ["#FEE5D9", "#FCAE91", "#FB6A4A", "#DE2D26", "#99000D"],
     outline: { onDark: "#FFE680", onLight: "#5C0A1E" },
   },

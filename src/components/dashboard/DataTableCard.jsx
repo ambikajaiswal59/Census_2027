@@ -21,6 +21,7 @@ export default function DataTableCard({
   const [query, setQuery] = useState("");
   const bodyRef = useRef(null);
   const cardRef = useRef(null);
+  const lastNonceRef = useRef(selectNonce); // page scrolls only for a NEW pick
 
   const isDistrict = level === "District";
 
@@ -56,9 +57,19 @@ export default function DataTableCard({
   const rows = useMemo(() => {
     const search = query.trim().toLowerCase();
 
-    if (!search) return data;
+    // The "Data Not Available" placeholder district is not listed in the table.
+    const listed = isDistrict
+      ? data.filter(
+          (row) =>
+            String(row.district || "")
+              .trim()
+              .toLowerCase() !== "data not available",
+        )
+      : data;
 
-    return data.filter((row) => {
+    if (!search) return listed;
+
+    return listed.filter((row) => {
       const primaryName = isDistrict ? row.district : row.state;
 
       return (
@@ -94,13 +105,22 @@ export default function DataTableCard({
     // Picked on the map: the row goes to the top of the table, then the page
     // scrolls down to the table. The table jumps at once (it is still off screen),
     // because two smooth scrolls at the same time cancel each other in some browsers.
+    const isNewPick = lastNonceRef.current !== selectNonce;
+    lastNonceRef.current = selectNonce;
+
     if (scrollPageToRow) {
       container.scrollTop =
         el.getBoundingClientRect().top -
         container.getBoundingClientRect().top +
         container.scrollTop;
 
-      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      // Changing the parameter re-runs this effect: the page must not jump then.
+      if (isNewPick) {
+        cardRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
       return;
     }
 
@@ -152,6 +172,13 @@ export default function DataTableCard({
     "",
   ];
 
+  // Number columns (parameter, % of total, uploaded dataset): heading and values right-aligned.
+  const firstNumberCol = isDistrict ? 3 : 2;
+  const numberColCount =
+    (showParamColumn ? 2 : 0) + (showUploadedColumn ? 1 : 0);
+  const isNumberCol = (index) =>
+    index >= firstNumberCol && index < firstNumberCol + numberColCount;
+
   // Header and body are separate tables, so they share fixed column widths (%).
   const hasDataColumn = showParamColumn || showUploadedColumn;
   // Numbers are percentages; strings are fixed sizes; null takes the space that is
@@ -159,12 +186,12 @@ export default function DataTableCard({
   // takes the rest, so they sit against the right edge, next to the arrow column.
   const widths = isDistrict
     ? showParamColumn
-      ? [5, null, "22%", "150px", "90px", "28px"]
+      ? [5, 27, 21, 23, 17, 7]
       : hasDataColumn
         ? [5, 24, 24, 40, 7]
         : [5, 44, 44, 7]
     : showParamColumn
-      ? [5, null, "150px", "90px", "28px"]
+      ? [5, 33, 36, 19, 7]
       : hasDataColumn
         ? [5, 44, 44, 7]
         : [5, 88, 7];
@@ -234,9 +261,38 @@ export default function DataTableCard({
                   {columns.map((heading, index) => (
                     <th
                       key={`${heading}-${index}`}
-                      className="overflow-hidden text-ellipsis whitespace-nowrap px-2.5 py-1 text-left text-[10px] uppercase tracking-[.04em] text-navy"
+                      className={`overflow-hidden text-ellipsis whitespace-nowrap px-2.5 py-1 text-[10px] uppercase tracking-[.04em] text-navy ${
+                        isNumberCol(index) ? "text-right" : "text-left"
+                      }`}
+                      title={heading || undefined}
                     >
-                      {heading}
+                      {index === 1 ? (
+                        <div className="flex items-center gap-2">
+                          <span className="shrink-0">{heading}</span>
+
+                          <div className="relative min-w-0 max-w-[180px] flex-1 normal-case tracking-normal">
+                            <i className="ti ti-search pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-muted" />
+                            <input
+                              type="search"
+                              value={query}
+                              onChange={(event) => setQuery(event.target.value)}
+                              placeholder={
+                                isDistrict
+                                  ? "Search district or state"
+                                  : "Search state / UT"
+                              }
+                              aria-label={
+                                isDistrict
+                                  ? "Search district or state"
+                                  : "Search state or union territory"
+                              }
+                              className="h-6 w-full rounded-md border border-line bg-white pl-6 pr-2 text-[11px] font-normal text-navy placeholder:text-muted focus:border-navy focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        heading
+                      )}
                     </th>
                   ))}
                 </tr>
@@ -310,17 +366,17 @@ export default function DataTableCard({
 
                         {showParamColumn && (
                           <>
-                            <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 font-mono text-blue">
+                            <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 text-right font-mono text-blue">
                               {formatIN(row[activeParamKey])}
                             </td>
-                            <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 font-mono text-navy">
+                            <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 text-right font-mono text-navy">
                               {percentOf(row[activeParamKey])}
                             </td>
                           </>
                         )}
 
                         {showUploadedColumn && (
-                          <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 font-mono text-blue">
+                          <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5 text-right font-mono text-blue">
                             {uploadedValueByKey[
                               uploadedKey(row.state, row.district)
                             ] || "—"}

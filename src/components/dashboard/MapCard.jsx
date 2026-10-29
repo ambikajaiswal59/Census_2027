@@ -918,7 +918,7 @@ export default function MapCard({
                           dominantBaseline="middle"
                           pointerEvents="none"
                           fontSize={
-                            (isDistrict ? 9 : 11) / Math.sqrt(position.zoom)
+                            (isDistrict ? 6 : 11) / Math.sqrt(position.zoom)
                           }
                           fontWeight={700}
                           fill="#020244"
@@ -1020,7 +1020,7 @@ export default function MapCard({
           title={showLabels ? "Hide names" : "Show names"}
           className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-[11px] font-semibold text-navy shadow-card hover:bg-soft"
         >
-          Labels
+          Label
           <span
             className={`relative h-4 w-7 rounded-full transition-colors ${showLabels ? "bg-navy" : "bg-[#C7CEDA]"}`}
           >
