@@ -52,20 +52,36 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
             </p>
 
             {/* Explore Directory button */}
-            <div className="mt-[25px] flex flex-wrap gap-2.5">
-              <Button
-                href="/population-dashboard"
-                variant="primary"
+            <div className="mt-[25px] flex flex-wrap items-center gap-2.5">
+              <a
+                href="#directory"
                 onClick={(e) => {
                   e.preventDefault();
-                  navigate("/population-dashboard");
+                  onScrollToDirectory();
                 }}
+                className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-[#0F2A4A] px-8 py-3.5 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 focus:outline-none focus:ring-2 focus:ring-[#F2C078]/50 focus:ring-offset-2 sm:w-[270px] sm:px-6 sm:text-base"
               >
-                Explore Directory
-                <span className="ml-0.5 inline-block transition-transform group-hover:translate-x-1">
+                <i className="ti ti-compass text-medium" />
+                <span>Explore Directory</span>
+                <span className="inline-block transition-transform duration-200 group-hover:translate-x-1">
                   →
                 </span>
-              </Button>
+              </a>
+
+              {/* Clickable Census 2011 Forerunner logo: right next to the button, same height */}
+              <button
+                type="button"
+                onClick={() => navigate("/population-dashboard")}
+                aria-label="Explore Census directory"
+                title="Explore census Directory"
+                className="group inline-flex h-[52px] w-full flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[#0F2A4A] shadow-md shadow-[#0F2A4A]/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 focus:outline-none focus:ring-2 focus:ring-[#F2C078]/50 focus:ring-offset-2 sm:w-[300px]"
+              >
+                <img
+                  src="/images/census-2011.jpeg"
+                  alt="Census 2011 Forerunner"
+                  className="h-full w-full object-cover object-center"
+                />
+              </button>
             </div>
           </div>
 
@@ -84,22 +100,6 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
               </div>
 
               {/* Census 2011 Forerunner Logo */}
-              <div className="flex flex-shrink-0 items-center justify-center">
-                {/* Clickable Census 2011 Forerunner Logo */}
-                <button
-                  type="button"
-                  onClick={() => navigate("/population-dashboard")}
-                  aria-label="Explore Census directory"
-                  title="Explore Directory"
-                  className="flex-shrink-0 cursor-pointer rounded-xl transition-transform duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F2A4A] focus-visible:ring-offset-2"
-                >
-                  <img
-                    src="/images/census-2011.jpeg"
-                    alt="Census 2011 Forerunner"
-                    className="h-16 w-16 rounded-xl object-contain sm:h-[76px] sm:w-[76px]"
-                  />
-                </button>
-              </div>
             </div>
 
             {/* Villages highlight card */}
