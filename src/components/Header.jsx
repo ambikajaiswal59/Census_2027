@@ -88,7 +88,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               </div>
 
               <div className="whitespace-nowrap text-[13px] tracking-[0.12rem]  text-[#e4c411] sm:text-[14px]">
-                Map, Apps & Data
+                Maps, Apps & Data
               </div>
             </div>
           </div>
