@@ -59,7 +59,7 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
                   e.preventDefault();
                   onScrollToDirectory();
                 }}
-                className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-[#0F2A4A] px-8 py-3.5 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 focus:outline-none focus:ring-2 focus:ring-[#F2C078]/50 focus:ring-offset-2 sm:w-[270px] sm:px-6 sm:text-base"
+                className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-[#0F2A4A] px-8 py-3.5 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent] sm:w-[270px] sm:px-6 sm:text-base"
               >
                 <i className="ti ti-compass text-medium" />
                 <span>Explore Directory</span>
@@ -71,15 +71,18 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
               {/* Clickable Census 2011 Forerunner logo: right next to the button, same height */}
               <button
                 type="button"
-                onClick={() => navigate("/population-dashboard")}
+                onClick={() => {
+                  // Short pause so the press animation is seen before the page changes
+                  setTimeout(() => navigate("/population-dashboard"), 250);
+                }}
                 aria-label="Explore Census directory"
                 title="Explore census Directory"
-                className="group inline-flex h-[52px] w-full flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[#0F2A4A] shadow-md shadow-[#0F2A4A]/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 focus:outline-none focus:ring-2 focus:ring-[#F2C078]/50 focus:ring-offset-2 sm:w-[300px]"
+                className="group inline-flex h-[52px] w-full flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[#0F2A4A] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent] sm:w-[270px]"
               >
                 <img
                   src="/images/census-2011.jpeg"
                   alt="Census 2011 Forerunner"
-                  className="h-full w-full object-cover object-center"
+                  className="h-full w-full object-fill transition-[filter] duration-300 ease-out group-hover:brightness-125 group-active:brightness-90"
                 />
               </button>
             </div>

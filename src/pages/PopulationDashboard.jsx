@@ -5,6 +5,7 @@ import DashboardSidebar from "../components/dashboard/DashboardSidebar.jsx";
 import MapCard from "../components/dashboard/MapCard.jsx";
 import LegendCard from "../components/dashboard/LegendCard.jsx";
 import DataTableCard from "../components/dashboard/DataTableCard.jsx";
+import useContentProtection from "../hooks/useContentProtection.js";
 
 import {
   levelOptions,
@@ -43,6 +44,7 @@ const UPLOAD_VALUE_KEY = "__upload";
 
 export default function PopulationDashboard() {
   // Shows the Upload button in the header while this page is open.
+  useContentProtection();
   useEnableUpload();
 
   const {
@@ -272,7 +274,7 @@ export default function PopulationDashboard() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-wrap px-3 pb-2 pt-4 sm:px-6 sm:pb-4 sm:pt-4">
+      <main className="select-none mx-auto w-full max-w-wrap px-3 pb-2 pt-4 sm:px-6 sm:pb-4 sm:pt-4">
         <div
           className="
             grid min-w-0 grid-cols-1 gap-3
