@@ -23,7 +23,7 @@ export const phaseData = [
       "Andaman & Nicobar Islands, Delhi (NDMC & Delhi Cantonment Board), Goa, Karnataka, Lakshadweep, Mizoram, Odisha and Sikkim: house listing 16 Apr–15 May, self-enumeration 1–15 Apr",
       "Madhya Pradesh, Andhra Pradesh, Arunachal Pradesh, Chandigarh, Chhattisgarh and Haryana: house listing 1–30 May, self-enumeration 16–30 Apr",
     ],
-    tag: "May-2026",
+    tag: "30 March, 2026",
     tagClass: "done",
   },
   {
@@ -42,7 +42,7 @@ export const phaseData = [
       "Conducted via a mobile app, replacing the earlier paper-based method",
       "Around 31 lakh enumerators and supervisors deployed nationwide, as part of over 3 million enumerators, supervisors and officials involved in the Census overall",
     ],
-    tag: "Mar-2026",
+    tag: "30 March, 2026",
     tagClass: "done",
   },
   // {

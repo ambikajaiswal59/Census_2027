@@ -1,7 +1,9 @@
 // Indian digit grouping: 677523 -> 6,77,523
 export const fmt = (n) => (n == null ? "0" : Number(n).toLocaleString("en-IN"));
 
-
+// Smoothly scrolls to a section. The page scrolls inside the element marked
+// data-scroll-root (see Layout), not the window. Short sections are centred in
+// the visible area; tall ones are aligned near the top.
 export function scrollToSection(target, offset = 20) {
   if (!target) return;
 

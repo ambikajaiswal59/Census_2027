@@ -1,5 +1,17 @@
 export const sourceData = [
   {
+    title: "Census: door-to-door enumeration from Jan.25 to Feb.28  ",
+    source: "The Hindu",
+    date: "31 October, 2026",
+    icon: "ti-building-bank",
+    summary:
+      "Census 2027 Phase II (population enumeration) is likely to begin in Delhi on January 10, with self-enumeration first and door-to-door visits by enumerators after that. Officials say the dates are still tentative.",
+    points: [
+      "The second phase of Census 2027, known as Population Enumeration, will begin with online self-enumeration on January 10, 2027, followed by door-to-door data collection from January 25 to February 28. Enumerators will ask 40 questions, including 13 new questions related to caste, religion, parents’ birth details, bank accounts, digital literacy, and identification documents. In poll-bound states such as Uttar Pradesh, Goa, Uttarakhand, and Punjab, the door-to-door exercise will take place earlier, from December 1, 2026, to January 5, 2027. The exercise has already been completed in Ladakh and certain snow-affected areas.",
+    ],
+    link: "/images/census-hindu-oct31.jpeg",
+  },
+  {
     title: "Don't release census data to press: RGI to states, UT ",
     source: "Hindustan TImes",
     date: "27 October, 2026",
@@ -55,12 +67,8 @@ export const sourceData = [
     summary:
       'The MHA notification setting out the Houselisting & Housing Census window and the self-enumeration option.',
     points: [
-      'Houselisting operations run between 1 April and 30 September 2026, over a 30-day window chosen by each State/UT',
-      'A 15-day self-enumeration window is offered just before house-to-house listing begins in each area',
-      'Population Enumeration, the second phase, is scheduled for February 2027',
-      'The exercise — originally due in 2021 — was postponed because of the COVID-19 pandemic',
-      'Census 2027 will record caste data as part of the enumeration phase',
+      " Ladakh completed entire Census exercise on October 5, first among all States and UTs; snow-bound areas of Himalayan States also completed the exercise; many people confused Census with SIR exercise, says J&K Census chief",
     ],
-    link: 'https://www.livemint.com/news/india/census-2027-first-phase-to-take-place-between-april-september-self-enumeration-option-to-be-available-11767795159267.html',
+    link: "/images/census-hindu-oct7.jpeg",
   },
 ];
