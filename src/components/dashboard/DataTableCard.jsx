@@ -214,7 +214,7 @@ export default function DataTableCard({
   return (
     <div
       ref={cardRef}
-      className="relative z-10 flex h-full !border-t-4 !border-t-[#020244] max-h-[420px] min-h-0 flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(2,2,68,.10)] motion-reduce:transition-none lg:max-h-none"
+      className="relative z-10 flex h-full !border-t-4 !border-t-[#020244] max-h-[420px] min-h-0 flex-col overflow-hidden rounded-2xl border border-[#DDE4EE] bg-white shadow-[inset_0_1px_0_#fff,0_5px_0_#D3DAE6,0_16px_26px_-8px_rgba(2,2,68,.25)] transition-shadow duration-300 hover:shadow-[inset_0_1px_0_#fff,0_5px_0_#C6CFDD,0_22px_34px_-8px_rgba(2,2,68,.30)] motion-reduce:transition-none lg:max-h-none"
     >
       {/* Header */}
       {/* <div className="relative z-20 flex flex-col gap-1.5 border-b border-white/10 bg-navy px-3 py-1.5 shadow-[0_3px_18px_rgba(0,0,0,.13)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4 sm:py-1.5">
@@ -253,7 +253,7 @@ export default function DataTableCard({
       <div className="flex min-h-0 flex-1 flex-col overflow-x-auto">
         <div className="flex min-h-0 flex-1 flex-col min-w-[560px]">
           {/* Header strip: reserves the same scrollbar gutter as the body so columns align */}
-          <div className="relative z-10 shrink-0 overflow-y-hidden bg-[#020244]/10 [scrollbar-gutter:stable]">
+          <div className="relative z-10 shrink-0 overflow-y-hidden bg-gradient-to-b from-[#E6E9F3] to-[#D3D8E8] shadow-[inset_0_1px_0_rgba(255,255,255,.8),0_3px_5px_-1px_rgba(2,2,68,.18)] [scrollbar-gutter:stable]">
             <table className="w-full table-fixed border-collapse text-xs">
               {colGroup}
               <thead>
@@ -286,7 +286,7 @@ export default function DataTableCard({
                                   ? "Search district or state"
                                   : "Search state or union territory"
                               }
-                              className="h-6 w-full rounded-md border border-line bg-white pl-6 pr-2 text-[11px] font-normal text-navy placeholder:text-muted focus:border-navy focus:outline-none"
+                              className="h-6 w-full rounded-md border border-line bg-white pl-6 pr-2 shadow-[inset_0_2px_3px_rgba(2,2,68,.14)] text-[11px] font-normal text-navy placeholder:text-muted focus:border-navy focus:outline-none"
                             />
                           </div>
                         </div>
@@ -341,7 +341,9 @@ export default function DataTableCard({
                           }
                         }}
                         className={`group relative cursor-pointer transition-all duration-200 ease-out hover:z-[1] hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(2,2,68,.10)] focus-visible:bg-[#EEEEF8] focus-visible:outline-none active:translate-y-0 active:scale-[0.995] motion-reduce:transform-none motion-reduce:transition-none ${
-                          isSelected ? "bg-[#DEDEF0]" : "hover:bg-soft"
+                          isSelected
+                            ? "bg-[#DEDEF0] shadow-[0_3px_8px_rgba(2,2,68,.14),inset_0_1px_0_#fff]"
+                            : "hover:bg-soft"
                         }`}
                       >
                         <td className="whitespace-nowrap border-b border-[#EDF0F4] p-2.5">

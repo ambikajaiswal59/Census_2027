@@ -167,6 +167,9 @@ export default function DashboardSidebar({
   const handleLevelChange = (value) => {
     setUiLevel(value); // urgent: toggle paints immediately
 
+    // Tell the map at once, so it shows its spinner while the new level loads.
+    window.dispatchEvent(new Event("map-level-switching"));
+
     // non-urgent: the heavy map re-render in the parent no longer blocks the toggle
     startTransition(() => {
       onLevelChange?.(value);
@@ -174,10 +177,10 @@ export default function DashboardSidebar({
   };
 
   return (
-    <aside className="flex min-h-0 flex-col rounded-2xl border border-line bg-white p-3 shadow-card sm:p-4 lg:h-full">
-      <div className="relative mb-2 h-10 shrink-0 overflow-hidden rounded-full border border-line bg-white">
+    <aside className="flex min-h-0 flex-col rounded-2xl border border-[#DDE4EE] bg-gradient-to-b from-white to-[#F4F7FB] p-3 shadow-[inset_0_1px_0_#fff,0_5px_0_#D3DAE6,0_16px_26px_-8px_rgba(2,2,68,.25)] sm:p-4 lg:h-full">
+      <div className="relative mb-2 h-10 shrink-0 overflow-hidden rounded-full border border-line bg-[#F1F4F9] shadow-[inset_0_2px_5px_rgba(2,2,68,.14)]">
         <div
-          className="absolute inset-y-0 left-0 w-1/2 rounded-full bg-navy shadow-[0_6px_14px_rgba(2,2,68,.35),inset_0_1px_0_rgba(255,255,255,.25)] transition-transform duration-300 ease-[cubic-bezier(.68,-0.55,.265,1.55)]"
+          className="absolute inset-y-0 left-0 w-1/2 rounded-full bg-gradient-to-b from-[#12126B] to-navy shadow-[0_3px_0_#00001F,0_8px_14px_rgba(2,2,68,.35),inset_0_1px_0_rgba(255,255,255,.3)] transition-transform duration-300 ease-[cubic-bezier(.68,-0.55,.265,1.55)]"
           style={{ transform: `translateX(${activeIndex * 100}%)` }}
         />
 
@@ -225,7 +228,7 @@ export default function DashboardSidebar({
           <div
             role="tablist"
             aria-label="Parameter group"
-            className="mb-4 mt-2 grid shrink-0 grid-cols-3 gap-0 overflow-hidden rounded-full border border-line bg-soft p-0"
+            className="mb-4 mt-2 grid shrink-0 grid-cols-3 gap-0 overflow-hidden rounded-full border border-line bg-[#EEF2F8] p-0 shadow-[inset_0_2px_4px_rgba(2,2,68,.14)]"
           >
             {groups.map((group) => {
               const isActive = group === activeGroup;
@@ -239,7 +242,7 @@ export default function DashboardSidebar({
                   onClick={() => switchGroup(group)}
                   className={`rounded-full px-2 py-1 text-[11px] font-bold transition-colors duration-150 ${
                     isActive
-                      ? "bg-[#8fc4e7a2] text-navy"
+                      ? "bg-gradient-to-b from-[#CFE4FA] to-[#A9CBEF] text-navy shadow-[inset_0_1px_0_rgba(255,255,255,.9),inset_0_-3px_5px_rgba(2,2,68,.18)]"
                       : "text-navy hover:bg-white"
                   }`}
                 >
@@ -263,7 +266,7 @@ export default function DashboardSidebar({
                 <label
                   className={`group mb-1 flex cursor-pointer items-center rounded-full py-1.5 pl-2 pr-3 text-[13px] font-medium text-navy transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
                     isSelected
-                      ? "-translate-y-px bg-[#DEDEF0] shadow-[0_6px_16px_rgba(2,2,68,.16),inset_0_1px_0_rgba(255,255,255,.7)]"
+                      ? "-translate-y-px bg-gradient-to-b from-[#ECECF8] to-[#D9D9EE] shadow-[0_3px_0_#C3C3E2,0_9px_16px_rgba(2,2,68,.16),inset_0_1px_0_#fff]"
                       : "bg-transparent hover:bg-[#EEEEF8]"
                   }`}
                 >
@@ -333,7 +336,7 @@ export default function DashboardSidebar({
                       key={index}
                       className={`group mb-1 flex cursor-pointer items-center rounded-full py-1.5 pl-2 pr-3 text-[13px] font-medium text-navy transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
                         isSelected
-                          ? "-translate-y-px bg-[#DEDEF0] shadow-[0_6px_16px_rgba(2,2,68,.16),inset_0_1px_0_rgba(255,255,255,.7)]"
+                          ? "-translate-y-px bg-gradient-to-b from-[#ECECF8] to-[#D9D9EE] shadow-[0_3px_0_#C3C3E2,0_9px_16px_rgba(2,2,68,.16),inset_0_1px_0_#fff]"
                           : "bg-transparent hover:bg-[#EEEEF8]"
                       }`}
                     >
@@ -389,7 +392,7 @@ export default function DashboardSidebar({
                 ? `A file is already uploaded for ${uiLevel}`
                 : undefined
             }
-            className="mt-3 flex w-full shrink-0 items-center justify-center gap-1.5 rounded-[9px] border border-navy/30 bg-white px-3 py-1.5 text-[12px] font-semibold text-navy transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#EEEEF8] hover:shadow-[0_6px_14px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#F1F3F7] disabled:text-[#9AA6B8] disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:bg-[#F1F3F7] disabled:active:scale-100 motion-reduce:transform-none sm:text-[13px]"
+            className="mt-3 flex w-full shrink-0 items-center justify-center gap-1.5 rounded-[9px] border border-navy/30 bg-gradient-to-b from-white to-[#EAEFF7] px-3 py-1.5 text-[12px] font-semibold text-navy shadow-[0_3px_0_#C3CCDA,0_7px_12px_rgba(2,2,68,.12),inset_0_1px_0_#fff] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_0_#C3CCDA,0_10px_16px_rgba(2,2,68,.16),inset_0_1px_0_#fff] active:translate-y-[2px] active:shadow-[0_1px_0_#C3CCDA,inset_0_2px_4px_rgba(2,2,68,.15)] disabled:cursor-not-allowed disabled:border-line disabled:bg-[#F1F3F7] disabled:text-[#9AA6B8] disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:bg-[#F1F3F7] disabled:active:scale-100 motion-reduce:transform-none sm:text-[13px]"
           >
             <i className="ti ti-upload" />
             Upload Excel

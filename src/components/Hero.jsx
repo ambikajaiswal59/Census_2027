@@ -67,8 +67,8 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
                   →
                 </span>
               </a>
-
               {/* Clickable Census 2011 Forerunner logo: right next to the button, same height */}
+
               <button
                 type="button"
                 onClick={() => {
@@ -76,13 +76,13 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
                   setTimeout(() => navigate("/population-dashboard"), 250);
                 }}
                 aria-label="Explore Census directory"
-                title="Explore census Directory"
-                className="group inline-flex h-[52px] w-full flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[#0F2A4A] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent] sm:w-[270px]"
+                title="Explore Census Directory"
+                className="group inline-flex h-[52px] w-full flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-[#0F2A4A] p-0 shadow-md shadow-[#0F2A4A]/15 outline-none transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none focus-visible:ring-0 [-webkit-tap-highlight-color:transparent] sm:w-[270px]"
               >
                 <img
-                  src="/images/census-2011.jpeg"
+                  src="/images/census-2011.jpg"
                   alt="Census 2011 Forerunner"
-                  className="h-full w-full object-fill transition-[filter] duration-300 ease-out group-hover:brightness-125 group-active:brightness-90"
+                  className="block h-full w-full object-fill"
                 />
               </button>
             </div>

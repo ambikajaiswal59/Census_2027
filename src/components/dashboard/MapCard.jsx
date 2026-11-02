@@ -6,6 +6,7 @@ import {
   ZoomableGroup,
   Marker,
 } from "react-simple-maps";
+import ThreeDMap from "./ThreeDMap.jsx";
 import {
   getRangeForValue,
   formatIN,
@@ -27,7 +28,8 @@ const MAP_WIDTH = 1000;
 const MAP_HEIGHT = 700;
 
 const MIN_ZOOM = 0.8;
-const MAX_ZOOM = 12;
+const MAX_ZOOM = 40; // District map
+const MAX_ZOOM_STATE = 20; // State / UT map zooms less far
 
 // Map borders: state lines are thicker and mid grey (State / UT map and on top of
 // the District map), district lines
@@ -244,7 +246,7 @@ function getGeometryBounds(geometry) {
   return { minLon, maxLon, minLat, maxLat };
 }
 
-function getFocusPosition(geometry) {
+function getFocusPosition(geometry, maxZoom = MAX_ZOOM) {
   const bounds = getGeometryBounds(geometry);
 
   if (!bounds) return null;
@@ -260,7 +262,7 @@ function getFocusPosition(geometry) {
 
   return {
     coordinates: unprojectMercator([(x1 + x2) / 2, (y1 + y2) / 2]),
-    zoom: Math.min(Math.max(fitZoom, 1), MAX_ZOOM),
+    zoom: Math.min(Math.max(fitZoom, 1), maxZoom),
   };
 }
 
@@ -308,6 +310,22 @@ function getPinPoint(geometry) {
   return best;
 }
 
+// Darker version of a "#RRGGBB" colour (for the side walls of the 3D map).
+function darken(hex, factor = 0.62) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
+  if (!m) return "#9AA4B2";
+  const n = parseInt(m[1], 16);
+  const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) =>
+    Math.round(v * factor),
+  );
+  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+}
+
+// 3D look (State / UT map): tilt, and how many stacked copies make the side walls.
+const TILT_DEG = 32;
+const EXTRUDE_LAYERS = 12;
+const EXTRUDE_STEP = 1.1; // screen px between layers
+
 // Label position for a shape: the centre of mass of its largest polygon.
 function getLabelPoint(geometry) {
   if (!geometry) return null;
@@ -341,6 +359,32 @@ function getLabelPoint(geometry) {
   return best;
 }
 
+// Spinner shown over the map while its shapes are loading.
+function MapLoader({ text = "Loading map…", solid = false }) {
+  return (
+    <div
+      className={`absolute inset-0 z-[5] flex flex-col items-center justify-center gap-3 ${
+        solid ? "bg-[#F4F7FB]" : "bg-white/60 backdrop-blur-[1px]"
+      }`}
+      role="status"
+      aria-live="polite"
+    >
+      <span className="h-10 w-10 animate-spin rounded-full border-4 border-[#CFE4FA] border-t-navy" />
+      <span className="text-[12px] font-bold text-navy">{text}</span>
+    </div>
+  );
+}
+
+// Rendered inside <Geographies>: tells the card when a new set of shapes has arrived.
+function LoadedSignal({ geographies, onLoaded }) {
+  useEffect(() => {
+    onLoaded();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geographies]);
+
+  return null;
+}
+
 export default function MapCard({
   activeParamKey,
   activeParamLabel,
@@ -357,12 +401,17 @@ export default function MapCard({
 }) {
   const containerRef = useRef(null);
   const geographiesRef = useRef([]);
+  const threeDControlsRef = useRef(null);
 
   const [tooltip, setTooltip] = useState(null);
   const [position, setPosition] = useState(DEFAULT_POSITION);
   const [focusPoint, setFocusPoint] = useState(null); // pin on the selected area
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [view3d, setView3d] = useState(true); // Existing raised 3D-style SVG map
+  const [true3d, setTrue3d] = useState(false); // New Three.js map with actual extruded geometry
   const [showLabels, setShowLabels] = useState(false); // names of all states / districts
+  const [labelBusy, setLabelBusy] = useState(false); // spinner while names are drawn
+  const [flatLoading, setFlatLoading] = useState(true); // flat map: new shapes are on their way
   // Area to zoom to and outline: set by a table-row click (selectedRow) or by
   // clicking a state / district directly on the map.
   const [focusRow, setFocusRow] = useState(selectedRow);
@@ -373,6 +422,31 @@ export default function MapCard({
 
   const isDistrict = level === "District";
   const geographyUrl = isDistrict ? DISTRICT_GEOJSON_URL : STATE_GEOJSON_URL;
+
+  // Names on / off: show the spinner first, then switch, so it can be seen before
+  // the (heavy) names are drawn; hide it once they are on screen.
+  function toggleLabels() {
+    setLabelBusy(true);
+    requestAnimationFrame(() => setTimeout(() => setShowLabels((v) => !v), 30));
+  }
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setLabelBusy(false));
+    return () => cancelAnimationFrame(id);
+  }, [showLabels]);
+
+  // The sidebar announces a State / UT <-> District switch the moment it is clicked,
+  // before the (slow) new map is ready, so the old map is covered at once.
+  useEffect(() => {
+    const onSwitching = () => setFlatLoading(true);
+    window.addEventListener("map-level-switching", onSwitching);
+    return () => window.removeEventListener("map-level-switching", onSwitching);
+  }, []);
+
+  // Switching State / UT <-> District loads a new boundary file: show the spinner.
+  useEffect(() => {
+    setFlatLoading(true);
+  }, [geographyUrl]);
 
   const currentData = isDistrict ? districtData : stateData;
 
@@ -569,7 +643,10 @@ export default function MapCard({
 
     if (!match) return;
 
-    const focus = getFocusPosition(match.geometry);
+    const focus = getFocusPosition(
+      match.geometry,
+      isDistrict ? MAX_ZOOM : MAX_ZOOM_STATE,
+    );
 
     if (focus) {
       const pinCoordinates = getPinPoint(match.geometry) || focus.coordinates;
@@ -644,6 +721,7 @@ export default function MapCard({
     setFocusPoint(null);
     setFocusRow(null);
     setPosition(DEFAULT_POSITION);
+    threeDControlsRef.current?.reset?.();
     onReset?.();
   }
 
@@ -653,13 +731,24 @@ export default function MapCard({
   }
 
   function zoomIn() {
+    if (true3d && threeDControlsRef.current?.zoomIn) {
+      threeDControlsRef.current.zoomIn();
+      return;
+    }
     setPosition((previous) => ({
       ...previous,
-      zoom: Math.min(Number((previous.zoom * 1.25).toFixed(2)), MAX_ZOOM),
+      zoom: Math.min(
+        Number((previous.zoom * 1.25).toFixed(2)),
+        isDistrict ? MAX_ZOOM : MAX_ZOOM_STATE,
+      ),
     }));
   }
 
   function zoomOut() {
+    if (true3d && threeDControlsRef.current?.zoomOut) {
+      threeDControlsRef.current.zoomOut();
+      return;
+    }
     setPosition((previous) => ({
       ...previous,
       zoom: Math.max(Number((previous.zoom / 1.25).toFixed(2)), MIN_ZOOM),
@@ -697,247 +786,368 @@ export default function MapCard({
       {/* Map fills the remaining height of the card */}
       <div
         ref={containerRef}
-        className="map-no-focus relative box-border min-h-[320px] min-w-0 w-full flex-1 cursor-grab overflow-hidden rounded-2xl border border-line bg-[#F4F7FB] shadow-card active:cursor-grabbing"
+        className="map-no-focus relative box-border min-h-[320px] min-w-0 w-full flex-1 cursor-grab overflow-hidden rounded-2xl border border-[#DDE4EE] bg-gradient-to-b from-[#F8FAFD] to-[#E9EFF8] shadow-[inset_0_1px_0_#fff,0_5px_0_#D3DAE6,0_16px_26px_-8px_rgba(2,2,68,.25)] active:cursor-grabbing"
         onMouseLeave={() => setTooltip(null)}
       >
         {/* No browser focus box around a clicked state; its boundary is drawn instead */}
         <style>{`.map-no-focus svg *:focus, .map-no-focus svg *:focus-visible, .map-no-focus svg:focus { outline: none !important; } @keyframes mapFilmIn { from { opacity: 0; } to { opacity: 1; } } .map-film { animation: mapFilmIn .35s ease-out; }`}</style>
 
-        <ComposableMap
-          projection="geoMercator"
-          projectionConfig={{ scale: MAP_SCALE }}
-          width={MAP_WIDTH}
-          height={MAP_HEIGHT}
-          style={{
-            display: "block",
-            width: "100%",
-            height: "100%",
-            maxWidth: "100%",
-          }}
-        >
-          <ZoomableGroup
-            zoom={position.zoom}
-            center={position.coordinates}
-            onMoveEnd={handleMoveEnd}
-            maxZoom={MAX_ZOOM}
-            minZoom={MIN_ZOOM}
+        {/* Spinner while a new boundary file is loading (State / UT <-> District) */}
+        {flatLoading ? (
+          <MapLoader solid text="Loading map…" />
+        ) : (
+          !true3d && labelBusy && <MapLoader text="Updating names…" />
+        )}
+
+        {true3d ? (
+          <ThreeDMap
+            level={level}
+            activeParamKey={activeParamKey}
+            ranges={ranges}
+            stateData={stateData}
+            districtData={districtData}
+            selectedRow={focusRow}
+            showLabels={showLabels}
+            getGeoName={getGeoName}
+            getGeoStateName={getGeoStateName}
+            getRow={getRow}
+            isSelectedGeo={isSelectedGeo}
+            colorFor={colorFor}
+            onGeoClick={handleGeoClick}
+            onHover={updateTooltip}
+            onLeave={() => setTooltip(null)}
+            onControlsReady={(controls) => {
+              threeDControlsRef.current = controls;
+            }}
+            onLoaded={() => setFlatLoading(false)}
+          />
+        ) : (
+          <ComposableMap
+            projection="geoMercator"
+            projectionConfig={{ scale: MAP_SCALE }}
+            width={MAP_WIDTH}
+            height={MAP_HEIGHT}
+            style={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              maxWidth: "100%",
+              // Keep the same raised-map appearance in both State / UT and District modes.
+              filter: view3d
+                ? "drop-shadow(0 4px 3px rgba(2,2,68,.30))"
+                : undefined,
+              transform: view3d
+                ? `perspective(1300px) rotateX(${TILT_DEG}deg) scale(1.08)`
+                : undefined,
+              transformOrigin: "50% 62%",
+              transition: "transform .6s cubic-bezier(.22,.8,.3,1)",
+            }}
           >
-            <Geographies geography={geographyUrl}>
-              {({ geographies }) => {
-                // Keep the loaded shapes so a table click can find and zoom to one.
-                geographiesRef.current = geographies;
-
-                const items = geographies.map((geo) => {
-                  const name = getGeoName(
-                    geo,
-                    isDistrict ? "District" : "State / UT",
-                  );
-                  const row = getRow(geo, name);
-
-                  return {
-                    geo,
-                    name,
-                    row,
-                    selected: isSelectedGeo(geo, name, row),
-                  };
-                });
-
-                // Draw the selected shape last so its outline is on top.
-                items.sort((a, b) => Number(a.selected) - Number(b.selected));
-
-                const ramp = COLOR_RAMPS.find((r) => r.id === rampId);
-
-                return items.map(({ geo, name, row, selected }) => {
-                  const fill = colorFor(row?.[activeParamKey]);
-                  const outline = selected
-                    ? getOutlineColors(fill, ramp)
-                    : null;
-
-                  return (
-                    <g key={geo.rsmKey}>
-                      <Geography
-                        geography={geo}
-                        fill={fill}
-                        stroke={
-                          selected
-                            ? outline.stroke
-                            : isDistrict
-                              ? DISTRICT_BORDER_COLOR
-                              : STATE_BORDER_COLOR
-                        }
-                        strokeWidth={
-                          selected
-                            ? 2.5
-                            : isDistrict
-                              ? DISTRICT_BORDER_WIDTH
-                              : STATE_BORDER_WIDTH
-                        }
-                        vectorEffect="non-scaling-stroke"
-                        strokeLinejoin="round"
-                        tabIndex={-1}
-                        focusable="false"
-                        onClick={() => handleGeoClick(geo, name)}
-                        onMouseEnter={(event) =>
-                          updateTooltip(event, geo, name)
-                        }
-                        onMouseMove={(event) => updateTooltip(event, geo, name)}
-                        style={{
-                          default: {
-                            outline: "none",
-                            // soft halo in the opposite tone keeps the edge crisp
-                            filter: selected
-                              ? `drop-shadow(0 0 2px ${outline.glow})`
-                              : undefined,
-                          },
-                          hover: {
-                            outline: "none",
-                            filter: "brightness(0.9)",
-                            cursor: "pointer",
-                          },
-                          pressed: { outline: "none" },
-                        }}
-                      />
-
-                      {/* Faint see-through film over the selected area: the map colour still shows through */}
-                      {selected && (
-                        <Geography
-                          geography={geo}
-                          fill={outline.film}
-                          fillOpacity={outline.filmOpacity}
-                          stroke="none"
-                          pointerEvents="none"
-                          tabIndex={-1}
-                          focusable="false"
-                          className="map-film"
-                          style={{
-                            default: { outline: "none", pointerEvents: "none" },
-                            hover: { outline: "none", pointerEvents: "none" },
-                            pressed: { outline: "none", pointerEvents: "none" },
-                          }}
-                        />
-                      )}
-                    </g>
-                  );
-                });
-              }}
-            </Geographies>
-
-            {/* District view: draw the state borders on top so each district can be traced to its state */}
-            {isDistrict && (
-              <Geographies geography={STATE_GEOJSON_URL}>
-                {({ geographies }) =>
-                  geographies.map((geo) => (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      fill="none"
-                      stroke={STATE_BORDER_COLOR}
-                      strokeWidth={STATE_BORDER_WIDTH}
-                      strokeLinejoin="round"
-                      vectorEffect="non-scaling-stroke"
-                      tabIndex={-1}
-                      focusable="false"
-                      style={{
-                        default: { outline: "none", pointerEvents: "none" },
-                        hover: { outline: "none", pointerEvents: "none" },
-                        pressed: { outline: "none", pointerEvents: "none" },
-                      }}
-                    />
-                  ))
-                }
-              </Geographies>
-            )}
-
-            {/* District view: the picked district's outline and film go on top of the
-                state borders, so a shared edge shows the picked colour, not grey */}
-            {isDistrict && focusRow && (
-              <Geographies geography={geographyUrl}>
-                {({ geographies }) => {
-                  const ramp = COLOR_RAMPS.find((r) => r.id === rampId);
-
-                  return geographies
-                    .map((geo) => {
-                      const name = getGeoName(geo, "District");
+            <ZoomableGroup
+              zoom={position.zoom}
+              center={position.coordinates}
+              onMoveEnd={handleMoveEnd}
+              maxZoom={isDistrict ? MAX_ZOOM : MAX_ZOOM_STATE}
+              minZoom={MIN_ZOOM}
+            >
+              {/* Raised-map side walls. Use fewer layers for districts to keep interaction responsive. */}
+              {view3d && (
+                <Geographies geography={geographyUrl}>
+                  {({ geographies }) => {
+                    const walls = geographies.map((geo) => {
+                      const name = getGeoName(
+                        geo,
+                        isDistrict ? "District" : "State / UT",
+                      );
                       const row = getRow(geo, name);
-
                       return {
                         geo,
-                        row,
-                        selected: isSelectedGeo(geo, name, row),
+                        wall: darken(colorFor(row?.[activeParamKey])),
                       };
-                    })
-                    .filter((item) => item.selected)
-                    .map(({ geo, row }) => {
-                      const outline = getOutlineColors(
-                        colorFor(row?.[activeParamKey]),
-                        ramp,
-                      );
+                    });
+                    const wallLayers = isDistrict ? 4 : EXTRUDE_LAYERS;
+
+                    return Array.from({ length: wallLayers }, (_, i) => {
+                      const depth = wallLayers - i;
 
                       return (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          fill="none"
-                          stroke={outline.stroke}
-                          strokeWidth={2.5}
-                          strokeLinejoin="round"
-                          vectorEffect="non-scaling-stroke"
-                          tabIndex={-1}
-                          focusable="false"
-                          style={{
-                            default: {
-                              outline: "none",
-                              pointerEvents: "none",
-                              filter: `drop-shadow(0 0 2px ${outline.glow})`,
-                            },
-                            hover: { outline: "none", pointerEvents: "none" },
-                            pressed: { outline: "none", pointerEvents: "none" },
-                          }}
-                        />
+                        <g
+                          key={depth}
+                          pointerEvents="none"
+                          transform={`translate(0 ${(depth * EXTRUDE_STEP) / position.zoom})`}
+                        >
+                          {walls.map(({ geo, wall }) => (
+                            <Geography
+                              key={geo.rsmKey}
+                              geography={geo}
+                              fill={wall}
+                              stroke={wall}
+                              strokeWidth={1}
+                              vectorEffect="non-scaling-stroke"
+                              tabIndex={-1}
+                              focusable="false"
+                              style={{
+                                default: {
+                                  outline: "none",
+                                  pointerEvents: "none",
+                                },
+                                hover: {
+                                  outline: "none",
+                                  pointerEvents: "none",
+                                },
+                                pressed: {
+                                  outline: "none",
+                                  pointerEvents: "none",
+                                },
+                              }}
+                            />
+                          ))}
+                        </g>
                       );
                     });
-                }}
-              </Geographies>
-            )}
-            {/* Name labels: shown for every state / district when the Labels switch is on */}
-            {showLabels && (
+                  }}
+                </Geographies>
+              )}
+
               <Geographies geography={geographyUrl}>
-                {({ geographies }) =>
-                  geographies.map((geo) => {
-                    const point = getLabelPoint(geo.geometry);
+                {({ geographies }) => {
+                  // Keep the loaded shapes so a table click can find and zoom to one.
+                  geographiesRef.current = geographies;
+
+                  const items = geographies.map((geo) => {
                     const name = getGeoName(
                       geo,
                       isDistrict ? "District" : "State / UT",
                     );
-                    if (!point || !name) return null;
+                    const row = getRow(geo, name);
 
-                    return (
-                      <Marker key={geo.rsmKey} coordinates={point}>
-                        <text
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          pointerEvents="none"
-                          fontSize={
-                            (isDistrict ? 6 : 11) / Math.sqrt(position.zoom)
-                          }
-                          fontWeight={700}
-                          fill="#020244"
-                          stroke="#fff"
-                          strokeWidth={2.5 / Math.sqrt(position.zoom)}
-                          paintOrder="stroke"
-                          strokeLinejoin="round"
-                          style={{ userSelect: "none" }}
-                        >
-                          {name}
-                        </text>
-                      </Marker>
-                    );
-                  })
-                }
+                    return {
+                      geo,
+                      name,
+                      row,
+                      selected: isSelectedGeo(geo, name, row),
+                    };
+                  });
+
+                  // Draw the selected shape last so its outline is on top.
+                  items.sort((a, b) => Number(a.selected) - Number(b.selected));
+
+                  const ramp = COLOR_RAMPS.find((r) => r.id === rampId);
+
+                  return (
+                    <>
+                      <LoadedSignal
+                        geographies={geographies}
+                        onLoaded={() => setFlatLoading(false)}
+                      />
+                      {items.map(({ geo, name, row, selected }) => {
+                        const fill = colorFor(row?.[activeParamKey]);
+                        const outline = selected
+                          ? getOutlineColors(fill, ramp)
+                          : null;
+
+                        return (
+                          <g key={geo.rsmKey}>
+                            <Geography
+                              geography={geo}
+                              fill={fill}
+                              stroke={
+                                selected
+                                  ? outline.stroke
+                                  : isDistrict
+                                    ? DISTRICT_BORDER_COLOR
+                                    : STATE_BORDER_COLOR
+                              }
+                              strokeWidth={
+                                selected
+                                  ? 2.5
+                                  : isDistrict
+                                    ? DISTRICT_BORDER_WIDTH
+                                    : STATE_BORDER_WIDTH
+                              }
+                              vectorEffect="non-scaling-stroke"
+                              strokeLinejoin="round"
+                              tabIndex={-1}
+                              focusable="false"
+                              onClick={() => handleGeoClick(geo, name)}
+                              onMouseEnter={(event) =>
+                                updateTooltip(event, geo, name)
+                              }
+                              onMouseMove={(event) =>
+                                updateTooltip(event, geo, name)
+                              }
+                              style={{
+                                default: {
+                                  outline: "none",
+                                  // soft halo in the opposite tone keeps the edge crisp
+                                  filter: selected
+                                    ? `drop-shadow(0 0 2px ${outline.glow})`
+                                    : undefined,
+                                },
+                                hover: {
+                                  outline: "none",
+                                  filter: "brightness(0.9)",
+                                  cursor: "pointer",
+                                },
+                                pressed: { outline: "none" },
+                              }}
+                            />
+
+                            {/* Faint see-through film over the selected area: the map colour still shows through */}
+                            {selected && (
+                              <Geography
+                                geography={geo}
+                                fill={outline.film}
+                                fillOpacity={outline.filmOpacity}
+                                stroke="none"
+                                pointerEvents="none"
+                                tabIndex={-1}
+                                focusable="false"
+                                className="map-film"
+                                style={{
+                                  default: {
+                                    outline: "none",
+                                    pointerEvents: "none",
+                                  },
+                                  hover: {
+                                    outline: "none",
+                                    pointerEvents: "none",
+                                  },
+                                  pressed: {
+                                    outline: "none",
+                                    pointerEvents: "none",
+                                  },
+                                }}
+                              />
+                            )}
+                          </g>
+                        );
+                      })}
+                    </>
+                  );
+                }}
               </Geographies>
-            )}
-          </ZoomableGroup>
-        </ComposableMap>
+
+              {/* District view: draw the state borders on top so each district can be traced to its state */}
+              {isDistrict && (
+                <Geographies geography={STATE_GEOJSON_URL}>
+                  {({ geographies }) =>
+                    geographies.map((geo) => (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        fill="none"
+                        stroke={STATE_BORDER_COLOR}
+                        strokeWidth={STATE_BORDER_WIDTH}
+                        strokeLinejoin="round"
+                        vectorEffect="non-scaling-stroke"
+                        tabIndex={-1}
+                        focusable="false"
+                        style={{
+                          default: { outline: "none", pointerEvents: "none" },
+                          hover: { outline: "none", pointerEvents: "none" },
+                          pressed: { outline: "none", pointerEvents: "none" },
+                        }}
+                      />
+                    ))
+                  }
+                </Geographies>
+              )}
+
+              {/* District view: the picked district's outline and film go on top of the
+                state borders, so a shared edge shows the picked colour, not grey */}
+              {isDistrict && focusRow && (
+                <Geographies geography={geographyUrl}>
+                  {({ geographies }) => {
+                    const ramp = COLOR_RAMPS.find((r) => r.id === rampId);
+
+                    return geographies
+                      .map((geo) => {
+                        const name = getGeoName(geo, "District");
+                        const row = getRow(geo, name);
+
+                        return {
+                          geo,
+                          row,
+                          selected: isSelectedGeo(geo, name, row),
+                        };
+                      })
+                      .filter((item) => item.selected)
+                      .map(({ geo, row }) => {
+                        const outline = getOutlineColors(
+                          colorFor(row?.[activeParamKey]),
+                          ramp,
+                        );
+
+                        return (
+                          <Geography
+                            key={geo.rsmKey}
+                            geography={geo}
+                            fill="none"
+                            stroke={outline.stroke}
+                            strokeWidth={2.5}
+                            strokeLinejoin="round"
+                            vectorEffect="non-scaling-stroke"
+                            tabIndex={-1}
+                            focusable="false"
+                            style={{
+                              default: {
+                                outline: "none",
+                                pointerEvents: "none",
+                                filter: `drop-shadow(0 0 2px ${outline.glow})`,
+                              },
+                              hover: { outline: "none", pointerEvents: "none" },
+                              pressed: {
+                                outline: "none",
+                                pointerEvents: "none",
+                              },
+                            }}
+                          />
+                        );
+                      });
+                  }}
+                </Geographies>
+              )}
+              {/* Name labels: shown for every state / district when the Labels switch is on */}
+              {showLabels && (
+                <Geographies geography={geographyUrl}>
+                  {({ geographies }) =>
+                    geographies.map((geo) => {
+                      const point = getLabelPoint(geo.geometry);
+                      const name = getGeoName(
+                        geo,
+                        isDistrict ? "District" : "State / UT",
+                      );
+                      if (!point || !name) return null;
+
+                      return (
+                        <Marker key={geo.rsmKey} coordinates={point}>
+                          <text
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            pointerEvents="none"
+                            fontSize={
+                              (isDistrict ? 6 : 11) / Math.sqrt(position.zoom)
+                            }
+                            fontWeight={700}
+                            fill="#020244"
+                            stroke="#fff"
+                            strokeWidth={2.5 / Math.sqrt(position.zoom)}
+                            paintOrder="stroke"
+                            strokeLinejoin="round"
+                            style={{ userSelect: "none" }}
+                          >
+                            {name}
+                          </text>
+                        </Marker>
+                      );
+                    })
+                  }
+                </Geographies>
+              )}
+            </ZoomableGroup>
+          </ComposableMap>
+        )}
 
         {/* Tooltip */}
         {tooltip && (
@@ -972,7 +1182,7 @@ export default function MapCard({
             COLOR_RAMPS.find((r) => r.id === rampId)?.colors?.[3] || "#153E90";
 
           return (
-            <div className="pointer-events-none absolute bottom-2 right-2 z-10 w-[168px] max-w-[52%] rounded-xl border border-line bg-white/95 p-2 text-[11px] shadow-card backdrop-blur-sm sm:bottom-3 sm:right-3 sm:w-[210px] sm:p-3 sm:text-[12px]">
+            <div className="pointer-events-none absolute bottom-2 right-2 z-10 w-[168px] max-w-[52%] rounded-xl border border-line bg-gradient-to-b from-white to-[#F1F5FA] p-2 text-[11px] shadow-[0_3px_0_#C9D1DD,0_12px_20px_-4px_rgba(2,2,68,.25),inset_0_1px_0_#fff] backdrop-blur-sm sm:bottom-3 sm:right-3 sm:w-[210px] sm:p-3 sm:text-[12px]">
               <div className="flex items-center gap-1.5 font-bold text-navy">
                 <span className="truncate">{summary.areaName}</span>
               </div>
@@ -1011,29 +1221,58 @@ export default function MapCard({
           );
         })()}
 
-        {/* Labels on / off: top right */}
-        <button
-          type="button"
-          role="switch"
-          aria-checked={showLabels}
-          onClick={() => setShowLabels((v) => !v)}
-          title={showLabels ? "Hide names" : "Show names"}
-          className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-[11px] font-semibold text-navy shadow-card hover:bg-soft"
-        >
-          Label
-          <span
-            className={`relative h-4 w-7 rounded-full transition-colors ${showLabels ? "bg-navy" : "bg-[#C7CEDA]"}`}
-          >
-            <span
-              className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${showLabels ? "left-[14px]" : "left-0.5"}`}
-            />
-          </span>
-        </button>
-
         {/* Map controls: one column, bottom left */}
         <div className="absolute bottom-3 left-3 z-10 flex flex-col items-center gap-1">
+          {/* Map type and names: same raised style as the buttons below */}
+          <div className="mb-1 flex flex-col items-center gap-1.5">
+            <button
+              type="button"
+              aria-pressed={view3d}
+              onClick={() => {
+                setTrue3d(false);
+                setView3d((previous) => !previous);
+              }}
+              title={view3d ? "Switch to flat map" : "Switch to raised 3D map"}
+              className={`flex h-6 w-6 select-none items-center justify-center rounded-lg border p-0 text-[8px] font-bold leading-[8px] text-navy transition-all duration-150 ease-out active:translate-y-[2px] motion-reduce:transition-none ${view3d ? "translate-y-[2px] border-[#A9CBEF] bg-gradient-to-b from-[#CFE4FA] to-[#B5D3F2] shadow-[0_1px_0_#A9CBEF,inset_0_2px_5px_rgba(2,2,68,.20)]" : "border-line bg-gradient-to-b from-white to-[#EEF2F8] shadow-[0_2px_0_#C9D1DD,0_5px_8px_rgba(2,2,68,.14),inset_0_1px_0_#fff] hover:-translate-y-px"}`}
+            >
+              {view3d ? "3D" : "2D"}
+            </button>
+
+            {/* True 3D appears only after the 2D button is clicked (raised 3D is on). */}
+            {view3d && (
+              <button
+                type="button"
+                aria-pressed={true3d}
+                onClick={() => setTrue3d((previous) => !previous)}
+                title={
+                  true3d
+                    ? "Return to the raised 3D map"
+                    : "Show true 3D geographic geometry"
+                }
+                className={`flex h-6 w-6 select-none items-center justify-center rounded-lg border p-0 text-[8px] font-bold leading-[8px] text-navy transition-all duration-150 ease-out active:translate-y-[2px] motion-reduce:transition-none ${true3d ? "translate-y-[2px] border-[#A9CBEF] bg-gradient-to-b from-[#CFE4FA] to-[#B5D3F2] shadow-[0_1px_0_#A9CBEF,inset_0_2px_5px_rgba(2,2,68,.20)]" : "border-line bg-gradient-to-b from-white to-[#EEF2F8] shadow-[0_2px_0_#C9D1DD,0_5px_8px_rgba(2,2,68,.14),inset_0_1px_0_#fff] hover:-translate-y-px"}`}
+              >
+                <span className="text-center">
+                  True
+                  <br />
+                  3D
+                </span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showLabels}
+              onClick={toggleLabels}
+              title={showLabels ? "Hide names" : "Show names"}
+              className={`flex h-6 w-6 select-none items-center justify-center rounded-lg border p-0 text-[8px] font-bold leading-[8px] text-navy transition-all duration-150 ease-out active:translate-y-[2px] motion-reduce:transition-none ${showLabels ? "translate-y-[2px] border-[#A9CBEF] bg-gradient-to-b from-[#CFE4FA] to-[#B5D3F2] shadow-[0_1px_0_#A9CBEF,inset_0_2px_5px_rgba(2,2,68,.20)]" : "border-line bg-gradient-to-b from-white to-[#EEF2F8] shadow-[0_2px_0_#C9D1DD,0_5px_8px_rgba(2,2,68,.14),inset_0_1px_0_#fff] hover:-translate-y-px"}`}
+            >
+              Label
+            </button>
+          </div>
+
           {/* Zoom */}
-          <div className="flex flex-col overflow-hidden rounded-lg border border-line bg-white ">
+          <div className="flex flex-col overflow-hidden rounded-lg border border-line bg-gradient-to-b from-white to-[#EEF2F8] shadow-[0_2px_0_#C9D1DD,0_5px_8px_rgba(2,2,68,.14),inset_0_1px_0_#fff]">
             <button
               type="button"
               onClick={zoomIn}
@@ -1059,7 +1298,7 @@ export default function MapCard({
           <button
             type="button"
             onClick={resetMap}
-            className="flex h-6 w-6 items-center justify-center rounded-lg border border-line bg-white text-navy  hover:bg-soft"
+            className="flex h-6 w-6 items-center justify-center rounded-lg border border-line bg-gradient-to-b from-white to-[#EEF2F8] text-navy shadow-[0_2px_0_#C9D1DD,0_5px_8px_rgba(2,2,68,.14),inset_0_1px_0_#fff] transition-all duration-150 hover:-translate-y-px active:translate-y-[2px] active:shadow-[0_0_0_#C9D1DD,inset_0_2px_3px_rgba(2,2,68,.18)]"
             aria-label="Reset map view"
             title="Reset map view"
           >
@@ -1070,7 +1309,7 @@ export default function MapCard({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="flex h-6 w-6 items-center justify-center rounded-lg border border-line bg-white text-navy  hover:bg-soft"
+            className="flex h-6 w-6 items-center justify-center rounded-lg border border-line bg-gradient-to-b from-white to-[#EEF2F8] text-navy shadow-[0_2px_0_#C9D1DD,0_5px_8px_rgba(2,2,68,.14),inset_0_1px_0_#fff] transition-all duration-150 hover:-translate-y-px active:translate-y-[2px] active:shadow-[0_0_0_#C9D1DD,inset_0_2px_3px_rgba(2,2,68,.18)]"
             aria-label={
               isFullscreen ? "Exit full screen" : "Enlarge map to full screen"
             }
