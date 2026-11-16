@@ -22,7 +22,7 @@ const TILE_BASE_URL =
 
 // Hard coded for now (TL): always the same column and table, whichever parameter or
 // level is chosen on the page.
-const TILE_URL = `${TILE_BASE_URL}/tiles/{z}/{x}/{y}.png?column=total_population&table=districts`;
+const TILE_URL = `${TILE_BASE_URL}/tiles/{z}/{x}/{y}.png?column=total_population&table=states`;
 
 // India, in lon / lat, used to frame the first view and the reset button.
 const INDIA_EXTENT_LONLAT = [68.1, 6.5, 97.5, 37.3];
