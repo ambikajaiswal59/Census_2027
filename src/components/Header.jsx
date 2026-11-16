@@ -37,9 +37,14 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
 
       const y = target.scrollTop;
 
-      if (y < 80) setShowMobileRow(true);
-      else if (y > lastY) setShowMobileRow(false);
-      else if (y < lastY) setShowMobileRow(true);
+      const delta = y - lastY;
+
+      // Ignore tiny movements (finger jitter), so it does not flicker.
+      if (Math.abs(delta) < 4 && y >= 20) return;
+
+      if (y < 20) setShowMobileRow(true);
+      else if (delta > 0) setShowMobileRow(false);
+      else setShowMobileRow(true);
 
       lastY = y;
     }
@@ -97,8 +102,8 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
         <nav className="relative flex min-h-[62px] items-center justify-between gap-2 py-2 sm:min-h-[70px] sm:py-0">
           {/* Census year, centred in the header (large screens, dashboard page only) */}
           {showCensusYear && (
-            <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
-              <span className="whitespace-nowrap   px-4 py-1 text-[25px] font-semibold tracking-wide text-[#e4c411]">
+            <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 xl:block">
+              <span className="whitespace-nowrap px-4 py-1 text-[25px] font-semibold tracking-wide text-[#e4c411]">
                 Census <span className="font-extrabold">{censusMeta.year}</span>
               </span>
             </div>
@@ -109,32 +114,62 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
             to="/"
             className="flex min-w-0 shrink items-center gap-2 sm:gap-3"
           >
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center sm:h-[60px] sm:w-[60px]">
+            <div
+              className={`flex flex-shrink-0 items-center justify-center sm:h-[60px] sm:w-[60px] md:max-lg:h-11 md:max-lg:w-11 ${
+                showCensusYear ? "h-11 w-11" : "h-9 w-9"
+              }`}
+            >
               <img
                 src="/images/ML_Info_Icon.png"
                 alt="ML Infomap Logo"
                 className="h-full w-full object-contain"
               />
             </div>
-            <div className="min-w-0">
+            <div
+              className={`min-w-0 ${
+                showCensusYear
+                  ? "flex h-11 flex-col justify-center gap-1 sm:block sm:h-auto"
+                  : ""
+              }`}
+            >
               {/* Letter spacing is tighter on phones so the name fits next to the buttons */}
-              <div className="-mb-2 -mt-2 whitespace-nowrap text-[16px] font-extrabold tracking-wider text-[#e4c411] min-[400px]:text-[18px] sm:text-[22px] sm:tracking-widest">
+              <div
+                className={`whitespace-nowrap text-[16px] font-extrabold tracking-wider text-[#e4c411] min-[400px]:text-[18px] sm:-mb-2 sm:-mt-2 sm:text-[22px] sm:tracking-widest md:max-lg:text-[17px] ${
+                  showCensusYear
+                    ? "leading-none sm:leading-normal"
+                    : "-mb-2 -mt-2"
+                }`}
+              >
                 ML Infomap
               </div>
-              <div className="whitespace-nowrap text-[10px] tracking-wide text-[#e4c411] min-[400px]:text-[12px] sm:text-[14px] sm:tracking-widest">
+              <div
+                className={`whitespace-nowrap text-[10px] tracking-wide text-[#e4c411] min-[400px]:text-[12px] sm:text-[14px] sm:tracking-widest md:max-lg:text-[11px] ${
+                  showCensusYear ? "leading-none sm:leading-normal" : ""
+                }`}
+              >
                 Maps, Apps &amp; Data
               </div>
             </div>
           </Link>
 
-          <div className="flex flex-shrink-0 items-center gap-2 sm:gap-5">
-            <div className="hidden items-center gap-6 md:flex">
+          {/* Tablets and laptops (768-1279px): Census year sits in the free space between the name and
+              the links, so it can never touch them */}
+          {showCensusYear && (
+            <div className="hidden min-w-0 flex-1 justify-center md:flex xl:hidden">
+              <span className="whitespace-nowrap px-2 text-[15px] font-semibold lg:text-[20px] tracking-wide text-[#e4c411]">
+                Census <span className="font-extrabold">{censusMeta.year}</span>
+              </span>
+            </div>
+          )}
+
+          <div className="flex flex-shrink-0 items-center gap-2 sm:gap-5 md:max-lg:gap-3">
+            <div className="hidden items-center gap-3 md:flex lg:gap-4 xl:gap-6">
               {navLinks.map((link) => (
                 <a
                   key={link.key}
                   href={link.href}
                   onClick={(e) => handleClick(e, link)}
-                  className="text-sm text-[#C4D0DF] hover:text-white"
+                  className="whitespace-nowrap text-[12px] text-[#C4D0DF] hover:text-white lg:text-sm"
                 >
                   {link.label}
                 </a>
@@ -160,6 +195,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
 
             min-[400px]:px-3 min-[400px]:text-[12px]
             sm:px-4 sm:py-2 sm:text-[14px]
+            md:max-lg:px-3 md:max-lg:py-1.5 md:max-lg:text-[12px]
             lg:px-5 lg:py-2.5 lg:text-[15px]
           "
               href="https://aajkabharatweb.com/"
@@ -211,28 +247,30 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
             opacity: showMobileRow ? 1 : 0,
             pointerEvents: showMobileRow ? "auto" : "none",
             transition:
-              "grid-template-rows 300ms ease-in-out, opacity 300ms ease-in-out",
+              "grid-template-rows 220ms cubic-bezier(.4,0,.2,1), opacity 160ms ease-out",
           }}
           aria-hidden={!showMobileRow}
         >
           <div className="min-h-0 overflow-hidden">
-            <div className="flex items-center justify-between border-t border-white/10 py-2.5">
-              {navLinks.map((link) => (
-                <a
-                  key={link.key}
-                  href={link.href}
-                  onClick={(e) => handleClick(e, link)}
-                  tabIndex={showMobileRow ? 0 : -1}
-                  className="px-1 text-sm text-[#C4D0DF] hover:text-white"
-                >
-                  {link.label}
-                </a>
-              ))}
-
-              {showCensusYear && (
-                <span className="whitespace-nowrap rounded-full border border-[#e4c411]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[#e4c411]">
-                  Census {censusMeta.year}
+            <div className="flex items-center justify-around gap-2 border-t border-white/10 py-2.5">
+              {/* Dashboard page: the lower row shows the Census year instead of the links */}
+              {showCensusYear ? (
+                <span className="whitespace-nowrap text-[17px] font-semibold tracking-wide text-[#e4c411]">
+                  Census{" "}
+                  <span className="font-extrabold">{censusMeta.year}</span>
                 </span>
+              ) : (
+                navLinks.map((link) => (
+                  <a
+                    key={link.key}
+                    href={link.href}
+                    onClick={(e) => handleClick(e, link)}
+                    tabIndex={showMobileRow ? 0 : -1}
+                    className="whitespace-nowrap px-1 text-sm text-[#C4D0DF] hover:text-white"
+                  >
+                    {link.label}
+                  </a>
+                ))
               )}
             </div>
           </div>

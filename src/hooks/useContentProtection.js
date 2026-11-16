@@ -7,6 +7,12 @@ import { useEffect } from "react";
 //
 // Note: this is a deterrent only. A browser always has the page's code, so it can
 // not stop a determined person, and it can never block screenshots.
+//
+// TEMPORARY: set to true while testing mobile responsiveness so F12 and
+// Ctrl+Shift+I / J / C open the browser developer tools. Set it back to false
+// before release.
+const ALLOW_DEVTOOLS = true;
+
 export default function useContentProtection() {
   useEffect(() => {
     const isField = (target) =>
@@ -25,8 +31,9 @@ export default function useContentProtection() {
       const mod = event.ctrlKey || event.metaKey;
 
       const devTools =
-        key === "f12" ||
-        (mod && event.shiftKey && ["i", "j", "c"].includes(key));
+        !ALLOW_DEVTOOLS &&
+        (key === "f12" ||
+          (mod && event.shiftKey && ["i", "j", "c"].includes(key)));
       const pageShortcuts = mod && ["u", "s", "p"].includes(key);
       const copyShortcuts =
         mod && ["c", "x", "a"].includes(key) && !isField(event.target);

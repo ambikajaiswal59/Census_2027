@@ -125,9 +125,11 @@ export default function PopulationDashboard() {
 
   // A click on the map picks the same area in the table. The table then scrolls
   // the whole page (not only itself) to that row, so it is brought on screen.
-  function handleMapSelect(row) {
+  // options.pageScroll === false: the pick came from the True 3D map, so only the
+  // table moves to the row; the page itself does not scroll down to the table.
+  function handleMapSelect(row, options = {}) {
     setSelectedRow({ ...row });
-    setSelectSource("map");
+    setSelectSource(options.pageScroll === false ? "table" : "map");
     setSelectNonce((n) => n + 1);
   }
 

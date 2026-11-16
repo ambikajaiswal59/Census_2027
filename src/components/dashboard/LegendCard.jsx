@@ -4,6 +4,7 @@ import {
   DEFAULT_RAMP_ID,
 } from "../../data/dashboardConfig.js";
 import BarsIcon from "../BarsIcon.jsx";
+import useSlidingHighlight from "../../hooks/useSlidingHighlight.js";
 
 const rampGradient = (colors) =>
   `linear-gradient(to right, ${colors.join(", ")})`;
@@ -21,30 +22,37 @@ export default function LegendCard({
   showNoData = false, // true when some areas have no value: adds the grey "No data available" entry
 }) {
   const ramp = COLOR_RAMPS.find((r) => r.id === rampId) || COLOR_RAMPS[0];
+  const [classRef, classSlide] = useSlidingHighlight([classCount]);
+  const [rampRef, rampSlide] = useSlidingHighlight([rampId]);
 
   return (
     <div className="flex flex-col rounded-2xl border border-[#DDE4EE] bg-gradient-to-b from-white to-[#F4F7FB] p-3 shadow-[inset_0_1px_0_#fff,0_5px_0_#D3DAE6,0_16px_26px_-8px_rgba(2,2,68,.25)] sm:p-4 lg:h-full">
       {/* Classification */}
       <h3 className="mb-1.5 flex items-center gap-1.5 text-[13px] font-extrabold text-navy">
         <BarsIcon size="1.1em" className="shrink-0 text-blue" />
-        Map Classification
+        Classes
       </h3>
 
       <div
+        ref={classRef}
         role="radiogroup"
         aria-label="Classification"
-        className="mb-3 grid grid-cols-2 gap-x-2 rounded-xl border border-line bg-[#F8FAFD] p-3 shadow-[inset_0_2px_5px_rgba(2,2,68,.10),0_1px_0_#fff] lg:grid-cols-1 lg:gap-x-0"
+        className="relative mb-3 grid grid-cols-2 gap-x-2 rounded-xl border border-line bg-[#F8FAFD] p-3 shadow-[inset_0_2px_5px_rgba(2,2,68,.10),0_1px_0_#fff] lg:grid-cols-1 lg:gap-x-0"
       >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute rounded-full bg-gradient-to-b from-[#ECECF8] to-[#D9D9EE] shadow-[0_3px_0_#C3C3E2,0_9px_16px_rgba(2,2,68,.16),inset_0_1px_0_#fff]"
+          style={classSlide}
+        />
         {CLASSIFICATION_OPTIONS.map((count) => {
           const isSelected = classCount === count;
 
           return (
             <label
               key={count}
-              className={`group mb-1.5 flex cursor-pointer items-center rounded-full py-2 pl-2 pr-3 text-[13px] font-medium text-navy transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
-                isSelected
-                  ? "-translate-y-px bg-gradient-to-b from-[#ECECF8] to-[#D9D9EE] shadow-[0_3px_0_#C3C3E2,0_9px_16px_rgba(2,2,68,.16),inset_0_1px_0_#fff]"
-                  : "bg-transparent hover:bg-[#EEEEF8]"
+              data-slide-active={isSelected ? "true" : undefined}
+              className={`group relative z-10 mb-1.5 flex cursor-pointer items-center rounded-full py-2 pl-2 pr-3 text-[13px] font-medium text-navy transition-colors duration-200 ease-out active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
+                isSelected ? "" : "hover:bg-[#EEEEF8]"
               }`}
             >
               <input
@@ -115,28 +123,38 @@ export default function LegendCard({
       {/* Colour ramps: always visible, so one click picks a ramp */}
       <h3 className="mb-1 mt-3 flex items-center gap-1 text-[13px] font-extrabold text-navy">
         <i className="ti ti-palette text-blue" />
-        Colour Ramp
+        Classes gradation
       </h3>
 
       <div>
         <ul
+          ref={rampRef}
           role="listbox"
           aria-label="Colour ramp"
-          className="rounded-xl border border-line bg-[#F8FAFD] p-3 shadow-[inset_0_2px_5px_rgba(2,2,68,.10),0_1px_0_#fff]"
+          className="relative rounded-xl border border-line bg-[#F8FAFD] p-3 shadow-[inset_0_2px_5px_rgba(2,2,68,.10),0_1px_0_#fff]"
         >
+          <li
+            aria-hidden="true"
+            className="pointer-events-none absolute list-none rounded-lg bg-gradient-to-b from-[#ECECF8] to-[#D9D9EE] shadow-[0_2px_0_#C3C3E2,0_6px_10px_rgba(2,2,68,.14),inset_0_1px_0_#fff]"
+            style={rampSlide}
+          />
           {COLOR_RAMPS.map((r) => {
             const isSelected = r.id === rampId;
             return (
-              <li key={r.id} role="option" aria-selected={isSelected}>
+              <li
+                key={r.id}
+                role="option"
+                aria-selected={isSelected}
+                data-slide-active={isSelected ? "true" : undefined}
+                className="relative z-10"
+              >
                 <button
                   type="button"
                   onClick={() => {
                     onRampChange?.(r.id);
                   }}
-                  className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] text-navy transition-colors hover:bg-[#EEEEF8] ${
-                    isSelected
-                      ? "bg-gradient-to-b from-[#ECECF8] to-[#D9D9EE] font-bold shadow-[0_2px_0_#C3C3E2,0_6px_10px_rgba(2,2,68,.14),inset_0_1px_0_#fff]"
-                      : "font-medium"
+                  className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] text-navy transition-colors ${
+                    isSelected ? "font-bold" : "font-medium hover:bg-[#EEEEF8]"
                   }`}
                 >
                   <span

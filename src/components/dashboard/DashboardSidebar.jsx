@@ -3,15 +3,17 @@ import {
   useState,
   useEffect,
   useLayoutEffect,
-  useRef,
   startTransition,
 } from "react";
 import { useUpload } from "../../context/UploadContext.jsx";
 import CountCard from "./CountCard.jsx";
 import MapPinBaseIcon from "../MapPinBaseIcon.jsx";
+import useSlidingHighlight from "../../hooks/useSlidingHighlight.js";
 
 // Parameters shown before the list starts scrolling.
 const VISIBLE_PARAMS = 5;
+// On phones the list is shorter: 3 rows, the rest scroll.
+const VISIBLE_PARAMS_MOBILE = 3;
 
 export default function DashboardSidebar({
   level,
@@ -51,16 +53,29 @@ export default function DashboardSidebar({
 
   // Switching tab keeps the same parameter selected: "Total Households" in Total
   // becomes "Rural - Total Households" in Rural (matched by its short label).
+  // Show the map spinner first, then apply the new parameter a moment later so
+  // the spinner is painted before the map is recoloured.
+  const [uiParam, setUiParam] = useState(activeParam);
+  useEffect(() => {
+    setUiParam(activeParam);
+  }, [activeParam]);
+
+  function changeParam(key) {
+    setUiParam(key); // highlight moves at once
+    window.dispatchEvent(new Event("map-param-switching"));
+    setTimeout(() => onParamChange(key), 40);
+  }
+
   function switchGroup(group) {
     setPickedGroup(group);
 
-    const current = parameters.find((p) => p.key === activeParam);
+    const current = parameters.find((p) => p.key === uiParam);
     if (!current || current.group === group) return;
 
     const match = parameters.find(
       (p) => p.group === group && p.shortLabel === current.shortLabel,
     );
-    if (match) onParamChange(match.key);
+    if (match) changeParam(match.key);
   }
   const visibleParameters = groups.length
     ? parameters.filter((p) => p.group === activeGroup)
@@ -116,8 +131,23 @@ export default function DashboardSidebar({
 
   // Height the list is capped at so exactly VISIBLE_PARAMS rows are visible.
   // Measured from the real rows, so wrapped labels don't break it.
-  const listRef = useRef(null);
+  const [listRef, slideStyle] = useSlidingHighlight([
+    uiParam,
+    activeGroup,
+    visibleParameters.length,
+  ]);
   const [listMaxHeight, setListMaxHeight] = useState(null);
+
+  const [isPhone, setIsPhone] = useState(
+    () => window.matchMedia("(max-width: 767px)").matches,
+  );
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsPhone(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  const visibleRows = isPhone ? VISIBLE_PARAMS_MOBILE : VISIBLE_PARAMS;
 
   useLayoutEffect(() => {
     const list = listRef.current;
@@ -125,14 +155,14 @@ export default function DashboardSidebar({
     if (!list) return undefined;
 
     const measure = () => {
-      const items = list.children;
+      const items = list.querySelectorAll("label");
 
-      if (items.length <= VISIBLE_PARAMS) {
+      if (items.length <= visibleRows) {
         setListMaxHeight(null);
         return;
       }
 
-      const last = items[VISIBLE_PARAMS - 1];
+      const last = items[visibleRows - 1];
       setListMaxHeight(last.offsetTop + last.offsetHeight + 2);
     };
 
@@ -142,7 +172,7 @@ export default function DashboardSidebar({
     observer.observe(list);
 
     return () => observer.disconnect();
-  }, [visibleParameters.length, activeGroup]);
+  }, [visibleParameters.length, activeGroup, visibleRows]);
 
   // A new tab scrolls to the selected parameter (or starts at the top if none).
   useEffect(() => {
@@ -228,8 +258,16 @@ export default function DashboardSidebar({
           <div
             role="tablist"
             aria-label="Parameter group"
-            className="mb-4 mt-2 grid shrink-0 grid-cols-3 gap-0 overflow-hidden rounded-full border border-line bg-[#EEF2F8] p-0 shadow-[inset_0_2px_4px_rgba(2,2,68,.14)]"
+            className="relative mb-4 mt-2 grid shrink-0 grid-cols-3 gap-0 overflow-hidden rounded-full border border-line bg-[#EEF2F8] p-0 shadow-[inset_0_2px_4px_rgba(2,2,68,.14)]"
           >
+            {/* Sliding pill */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 w-1/3 rounded-full bg-gradient-to-b from-[#CFE4FA] to-[#A9CBEF] shadow-[inset_0_1px_0_rgba(255,255,255,.9),inset_0_-3px_5px_rgba(2,2,68,.18)] transition-transform duration-300 ease-[cubic-bezier(.68,-0.35,.265,1.35)] motion-reduce:transition-none"
+              style={{
+                transform: `translateX(${Math.max(0, groups.indexOf(activeGroup)) * 100}%)`,
+              }}
+            />
             {groups.map((group) => {
               const isActive = group === activeGroup;
 
@@ -240,11 +278,7 @@ export default function DashboardSidebar({
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => switchGroup(group)}
-                  className={`rounded-full px-2 py-1 text-[11px] font-bold transition-colors duration-150 ${
-                    isActive
-                      ? "bg-gradient-to-b from-[#CFE4FA] to-[#A9CBEF] text-navy shadow-[inset_0_1px_0_rgba(255,255,255,.9),inset_0_-3px_5px_rgba(2,2,68,.18)]"
-                      : "text-navy hover:bg-white"
-                  }`}
+                  className="relative z-10 rounded-full px-2 py-1 text-[11px] font-bold text-navy"
                 >
                   {group}
                 </button>
@@ -258,16 +292,22 @@ export default function DashboardSidebar({
           style={listMaxHeight ? { maxHeight: listMaxHeight } : undefined}
           className="relative shrink-0 overflow-y-auto overscroll-contain px-1 py-1 [scrollbar-color:#C7CEDA_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#C7CEDA] [&::-webkit-scrollbar-thumb:hover]:bg-[#9AA6B8] [&::-webkit-scrollbar-track]:bg-transparent"
         >
+          {/* Sliding highlight behind the selected parameter */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute rounded-full bg-gradient-to-b from-[#ECECF8] to-[#D9D9EE] shadow-[0_3px_0_#C3C3E2,0_9px_16px_rgba(2,2,68,.16),inset_0_1px_0_#fff]"
+            style={slideStyle}
+          />
+
           {visibleParameters.map((p) => {
-            const isSelected = activeParam === p.key;
+            const isSelected = uiParam === p.key;
 
             return (
               <Fragment key={p.key}>
                 <label
-                  className={`group mb-1 flex cursor-pointer items-center rounded-full py-1.5 pl-2 pr-3 text-[13px] font-medium text-navy transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
-                    isSelected
-                      ? "-translate-y-px bg-gradient-to-b from-[#ECECF8] to-[#D9D9EE] shadow-[0_3px_0_#C3C3E2,0_9px_16px_rgba(2,2,68,.16),inset_0_1px_0_#fff]"
-                      : "bg-transparent hover:bg-[#EEEEF8]"
+                  data-slide-active={isSelected ? "true" : undefined}
+                  className={`group relative z-10 mb-1 flex cursor-pointer items-center rounded-full py-1.5 pl-2 pr-3 text-[13px] font-medium text-navy transition-colors duration-200 ease-out active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none ${
+                    isSelected ? "" : "hover:bg-[#EEEEF8]"
                   }`}
                 >
                   <input
@@ -279,7 +319,7 @@ export default function DashboardSidebar({
                       // Only one field can be active at a time across both
                       // lists: picking a Parameter clears the Customer Input pick.
                       setSelectedUpload(null);
-                      onParamChange(p.key);
+                      if (p.key !== uiParam) changeParam(p.key);
                     }}
                     className="sr-only"
                   />

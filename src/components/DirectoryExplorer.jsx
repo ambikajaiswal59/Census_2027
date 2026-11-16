@@ -251,7 +251,9 @@ export default function DirectoryExplorer({ stats }) {
                 {columns.map((col) => (
                   <th
                     key={col.key}
-                    className="whitespace-nowrap border-b border-line px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-[#596577] sm:text-xs"
+                    className={`whitespace-nowrap border-b border-line px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#596577] sm:text-xs ${
+                      col.mono ? "text-right" : "text-left"
+                    }`}
                   >
                     {col.label}
                   </th>
@@ -303,7 +305,9 @@ export default function DirectoryExplorer({ stats }) {
                     {columns.map((col) => (
                       <td
                         key={col.key}
-                        className="whitespace-nowrap border-b border-line px-4 py-3 text-[13px] text-text sm:text-sm"
+                        className={`whitespace-nowrap border-b border-line px-4 py-3 text-[13px] text-text sm:text-sm ${
+                          col.mono ? "text-right" : ""
+                        }`}
                       >
                         {renderCell(col, r)}
                       </td>

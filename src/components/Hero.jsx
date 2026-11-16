@@ -52,14 +52,14 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
             </p>
 
             {/* Explore Directory button */}
-            <div className="mt-[25px] flex flex-wrap items-center gap-2.5">
+            <div className="mt-[25px] flex flex-col items-stretch gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
               <a
                 href="#directory"
                 onClick={(e) => {
                   e.preventDefault();
                   onScrollToDirectory();
                 }}
-                className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-[#0F2A4A] px-8 py-3.5 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent] sm:w-[270px] sm:px-6 sm:text-base"
+                className="group box-border flex h-[52px] w-full items-center justify-center gap-2.5 rounded-full bg-[#0F2A4A] px-8 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent] sm:w-[270px] sm:px-6 sm:text-base"
               >
                 <i className="ti ti-compass text-medium" />
                 <span>Explore Directory</span>
@@ -77,10 +77,10 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
                 }}
                 aria-label="Explore Census directory"
                 title="Explore Census Directory"
-                className="group inline-flex h-[52px] w-full flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-[#0F2A4A] p-0 shadow-md shadow-[#0F2A4A]/15 outline-none transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none focus-visible:ring-0 [-webkit-tap-highlight-color:transparent] sm:w-[270px]"
+                className="group box-border flex h-[52px] w-full flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-[#0F2A4A] p-0 shadow-md shadow-[#0F2A4A]/15 outline-none transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none focus-visible:ring-0 [-webkit-tap-highlight-color:transparent] sm:w-[270px]"
               >
                 <img
-                  src="/images/census-2011.jpg"
+                  src="/images/census-2011.jpeg"
                   alt="Census 2011 Forerunner"
                   className="block h-full w-full object-fill"
                 />

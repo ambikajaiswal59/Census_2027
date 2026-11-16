@@ -27,31 +27,31 @@ export const DEFAULT_CLASSIFICATION = 5;
 export const COLOR_RAMPS = [
   {
     id: "yellows",
-    name: "Yellows",
+    name: "Yellow",
     colors: ["#FFF7BF", "#FFE66D", "#FFC31F", "#D99100", "#7A4A00"],
     outline: { onDark: "#6FE0FF", onLight: "#3B0A6B" },
   },
   {
     id: "blues",
-    name: "Blues",
+    name: "Blue",
     colors: ["#DEEBF7", "#9ECAE1", "#4292C6", "#2171B5", "#08306B"],
     outline: { onDark: "#FFB347", onLight: "#7A2E00" },
   },
   {
     id: "greens",
-    name: "Greens",
+    name: "Green",
     colors: ["#E5F5E0", "#A1D99B", "#41AB5D", "#238B45", "#00441B"],
     outline: { onDark: "#C98BFF", onLight: "#7A0F3A" },
   },
   {
     id: "purples",
-    name: "Purples",
+    name: "Purple",
     colors: ["#F2E7FA", "#D0B0E8", "#A56FD0", "#7B3FB0", "#3F0F72"],
     outline: { onDark: "#7CF0B5", onLight: "#0B4A2E" },
   },
   {
     id: "reds",
-    name: "Reds",
+    name: "Red",
     colors: ["#FEE5D9", "#FCAE91", "#FB6A4A", "#DE2D26", "#99000D"],
     outline: { onDark: "#FFE680", onLight: "#5C0A1E" },
   },
