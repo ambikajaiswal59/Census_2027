@@ -20,32 +20,37 @@ export default function Home() {
       })
     : "—";
   const [activeItem, setActiveItem] = useState(null);
+  const scrollRootRef = useRef(null); // the scrolling area below the header
   const censusHeadRef = useRef(null);
   const directoryHeadRef = useRef(null);
   const { data: stats, loading: statsLoading, error: statsError } = useStats();
 
   // ─────────────────────────────────────────────────────────
-  // Smart scroll — centers short sections, top-aligns tall ones
+  // Smart scroll — centers short sections, top-aligns tall ones.
+  // The page scrolls inside the area below the header (not the window), so the
+  // scrollbar starts under the header; positions are measured inside that area.
   // ─────────────────────────────────────────────────────────
   function scrollToSection(target, offset = 20) {
-    if (!target) return;
-    const headerHeight = document.querySelector("header")?.offsetHeight || 0;
-    const rect = target.getBoundingClientRect();
-    const sectionHeight = rect.height;
-    const viewportHeight = window.innerHeight - headerHeight;
-    const absoluteTop = rect.top + window.pageYOffset;
+    const root = scrollRootRef.current;
+    if (!target || !root) return;
+
+    const sectionHeight = target.getBoundingClientRect().height;
+    const viewportHeight = root.clientHeight;
+    const absoluteTop =
+      target.getBoundingClientRect().top -
+      root.getBoundingClientRect().top +
+      root.scrollTop;
 
     let scrollTop;
     if (sectionHeight < viewportHeight * 0.7) {
       // Short section — center it vertically in the visible area
-      scrollTop =
-        absoluteTop - headerHeight - (viewportHeight - sectionHeight) / 2;
+      scrollTop = absoluteTop - (viewportHeight - sectionHeight) / 2;
     } else {
-      // Tall section — align its top just below the sticky header
-      scrollTop = absoluteTop - headerHeight - offset;
+      // Tall section — align its top near the top of the visible area
+      scrollTop = absoluteTop - offset;
     }
 
-    window.scrollTo({
+    root.scrollTo({
       top: Math.max(scrollTop, 0),
       behavior: "smooth",
     });
@@ -63,11 +68,20 @@ export default function Home() {
 
   return (
     <>
-      <Header
-        onScrollToCensus={scrollToCensus}
-        onScrollToDirectory={scrollToDirectory}
-      />
+      {/* The screen is split: header on top (full width), scrollable area below it. */}
+      <div className="flex h-[100dvh] flex-col">
+        <Header
+          onScrollToCensus={scrollToCensus}
+          onScrollToDirectory={scrollToDirectory}
+        />
 
+        {/* The page scrolls here. data-scroll-root lets the header's mobile row react
+            to this scrolling. */}
+        <div
+          ref={scrollRootRef}
+          data-scroll-root
+          className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]"
+        >
       <Hero
         onScrollToCensus={scrollToCensus}
         onScrollToDirectory={scrollToDirectory}
@@ -133,6 +147,8 @@ export default function Home() {
       </main>
 
       <Footer />
+        </div>
+      </div>
 
       <PhaseModal activeItem={activeItem} onClose={() => setActiveItem(null)} />
     </>

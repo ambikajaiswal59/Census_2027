@@ -134,10 +134,11 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
             </div>
 
             <div className="mt-auto flex flex-wrap justify-between gap-2.5 pt-2.5 text-[10px] text-[#7A8492]">
-              <span>
-                <strong className="text-[#475467]">Source</strong> Local
-                Government Directory
-              </span>
+             <a href="https://lgdirectory.gov.in/" 
+             target="_blank" rel="noreferrer noopener"
+             className="text-[#475467] hover:underline">
+                <strong>Source</strong> Local Government Directory
+              </a>
             </div>
           </div>
         </div>
