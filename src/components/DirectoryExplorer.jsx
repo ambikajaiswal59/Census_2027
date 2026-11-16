@@ -88,6 +88,10 @@ export default function DirectoryExplorer({ stats }) {
     setPage(0);
   }, [level, debouncedQuery]);
 
+  useEffect(() => {
+    console.log("query:", query, "| debounced:", debouncedQuery);
+  }, [query, debouncedQuery]);
+
   // Fetch data — search goes to backend
   useEffect(() => {
     const controller = new AbortController();
@@ -340,8 +344,14 @@ export default function DirectoryExplorer({ stats }) {
       )}
 
       {/* ─── Footer ─── */}
-      <div className="border-l-[3px] border-saffron bg-[#FFF8EC] px-4 py-3 text-xs leading-relaxed text-[#765020]">
-        Source: <b>Local Government Directory</b>
+      <div className="border-l-[3px] border-saffron bg-[#FFF8EC] px-4 py-3 text-xs leading-relaxed text-[#765020] hover:underline">
+        <a
+          href="https://lgdirectory.gov.in/"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Source: <b>Local Government Directory</b>
+        </a>
       </div>
     </div>
   );

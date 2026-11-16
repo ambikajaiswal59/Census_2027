@@ -1,45 +1,187 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-// Only the small meta file (not the full census tables), so the year follows the stored data.
-import censusMeta from "../data/census/meta.json";
-import { scrollToSection } from "../utils.js";
+import { createPortal } from "react-dom";
 
 const navLinks = [
   { href: "#directory", label: "Directory", key: "directory" },
   { href: "#phases", label: "Census 2027", key: "census" },
+  // "Sources" is a dropdown (see SOURCE_LINKS and <SourcesMenu />)
+  { href: "#", label: "Sources", key: "sources", menu: true },
+];
+
+// The two options inside the Sources dropdown.
+const SOURCE_LINKS = [
   {
+    label: "Census of India",
+    href: "https://censusindia.gov.in/census.website/en",
+  },
+  {
+    label: "Local Government Directory",
     href: "https://lgdirectory.gov.in/",
-    label: "Sources",
-    key: "sources",
-    external: true,
   },
 ];
 
-// The census year is shown on this page only.
-const DASHBOARD_PATH = "/population-dashboard";
+// "Sources" button with a dropdown of external links. The list is drawn in a portal
+// (fixed position) so the header's own overflow never clips it, including the mobile
+// lower row.
+function SourcesMenu({ label, className }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const MENU_WIDTH = 250;
+
+  function toggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    // Right edge lined up with the button, kept inside the screen.
+    const left = Math.min(
+      Math.max(8, rect.right - MENU_WIDTH),
+      window.innerWidth - MENU_WIDTH - 8,
+    );
+
+    setPos({ top: rect.bottom + 8, left });
+    setOpen(true);
+  }
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const close = () => setOpen(false);
+
+    const onDown = (event) => {
+      if (
+        !buttonRef.current?.contains(event.target) &&
+        !menuRef.current?.contains(event.target)
+      ) {
+        close();
+      }
+    };
+
+    const onKey = (event) => {
+      if (event.key === "Escape") close();
+    };
+
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown, { passive: true });
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", close);
+    window.addEventListener("scroll", close, true);
+
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("scroll", close, true);
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={toggle}
+        className={`inline-flex items-center gap-1.5 ${className}`}
+      >
+        {label}
+        <svg
+          viewBox="0 0 24 24"
+          className={`h-5 w-5 transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            style={{ top: pos.top, left: pos.left, width: MENU_WIDTH }}
+            className="fixed z-[70] overflow-hidden rounded-xl border border-white/10 bg-navy p-1.5 shadow-[0_14px_30px_rgba(0,0,0,.35)]"
+          >
+            {SOURCE_LINKS.map((item) => (
+              <a
+                key={item.href}
+                role="menuitem"
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm text-[#C4D0DF] transition-colors duration-150 hover:bg-white/10 hover:text-white"
+              >
+                {item.label}
+                <span aria-hidden="true">&#8599;</span>
+              </a>
+            ))}
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}
 
 export default function Header({ onScrollToCensus, onScrollToDirectory }) {
   const [showMobileRow, setShowMobileRow] = useState(true);
-  const [adminOpen, setAdminOpen] = useState(false);
-  const adminRef = useRef(null);
-  const navigate = useNavigate();
-  const showCensusYear = useLocation().pathname === DASHBOARD_PATH;
 
   useEffect(() => {
     let lastY = 0;
+    let accumulatedScroll = 0;
 
-    // The page now scrolls inside the element marked data-scroll-root (see Layout),
-    // not the window. Scroll events don't bubble, so listen in the capture phase.
+    const SCROLL_THRESHOLD = 50;
+
+    // The page scrolls inside the area marked data-scroll-root (below the header),
+    // or in the window on pages without it. Scroll events do not bubble, so listen
+    // in the capture phase and pick the right scroller.
     function onScroll(e) {
       const target = e.target;
+      const isRoot = target?.hasAttribute?.("data-scroll-root");
 
-      if (!target?.hasAttribute?.("data-scroll-root")) return;
+      if (target !== document && !isRoot) return;
 
-      const y = target.scrollTop;
+      const y = isRoot ? target.scrollTop : window.scrollY;
+      const delta = y - lastY;
 
-      if (y < 80) setShowMobileRow(true);
-      else if (y > lastY) setShowMobileRow(false);
-      else if (y < lastY) setShowMobileRow(true);
+      // Always show at the very top
+      if (y <= 20) {
+        setShowMobileRow(true);
+        accumulatedScroll = 0;
+        lastY = y;
+        return;
+      }
+
+      // Add movement in the current direction
+      accumulatedScroll += delta;
+
+      // Scrolling DOWN enough → collapse
+      if (accumulatedScroll >= SCROLL_THRESHOLD) {
+        setShowMobileRow(false);
+        accumulatedScroll = 0;
+      }
+
+      // Scrolling UP enough → expand
+      else if (accumulatedScroll <= -SCROLL_THRESHOLD) {
+        setShowMobileRow(true);
+        accumulatedScroll = 0;
+      }
 
       lastY = y;
     }
@@ -52,102 +194,73 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
     return () => document.removeEventListener("scroll", onScroll, true);
   }, []);
 
-  // Close the Admin dropdown on an outside click
-  useEffect(() => {
-    function onDocClick(e) {
-      if (adminRef.current && !adminRef.current.contains(e.target))
-        setAdminOpen(false);
-    }
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, []);
-
   function handleClick(e, link) {
-    e.preventDefault();
-
-    if (link.external) {
-      window.open(link.href, "_blank", "noreferrer");
-      return;
-    }
-
-    const sectionId = link.key === "census" ? "phases" : "directory";
-    const customScroll =
-      link.key === "census" ? onScrollToCensus : onScrollToDirectory;
-
-    if (customScroll) {
-      customScroll();
-      return;
-    }
-
-    const target = document.getElementById(sectionId);
-
-    if (target) {
-      // Already on the Home page: scroll straight to the section.
-      scrollToSection(target);
-    } else {
-      // On another page: go to Home; it reads the hash and scrolls on load.
-      navigate(`/#${sectionId}`);
+    if (link.key === "census") {
+      e.preventDefault();
+      onScrollToCensus();
+    } else if (link.key === "directory") {
+      e.preventDefault();
+      onScrollToDirectory();
     }
   }
 
   return (
-    // Not sticky any more: Layout keeps the header on top and scrolls the area below it.
-    <header className="relative z-20 w-full shrink-0 overflow-y-hidden bg-navy [scrollbar-gutter:stable] shadow-[0_3px_18px_rgba(0,0,0,.13)]">
-      <div className="mx-auto w-full max-w-wrap px-3 sm:px-6">
-        <nav className="relative flex min-h-[62px] items-center justify-between gap-2 py-2 sm:min-h-[70px] sm:py-0">
-          {/* Census year, centred in the header (large screens, dashboard page only) */}
-          {showCensusYear && (
-            <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
-              <span className="whitespace-nowrap   px-4 py-1 text-[25px] font-semibold tracking-wide text-[#e4c411]">
-                Census <span className="font-extrabold">{censusMeta.year}</span>
-              </span>
-            </div>
-          )}
-
-          {/* Logo + name: shrinks (never pushes the buttons off-screen) on small phones */}
-          <Link
-            to="/"
-            className="flex min-w-0 shrink items-center gap-2 sm:gap-3"
-          >
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center sm:h-[60px] sm:w-[60px]">
+    <header className="sticky top-0 z-20 w-full shrink-0 bg-navy shadow-[0_3px_18px_rgba(0,0,0,.13)]">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        {/* ================= TOP ROW ================= */}
+        <nav className="flex min-h-[72px] items-center justify-between gap-2 py-2 sm:min-h-[84px] lg:min-h-[100px] sm:py-0">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3 lg:gap-4">
+            {/* Logo */}
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center sm:h-14 sm:w-14 lg:h-[68px] lg:w-[68px]">
               <img
                 src="/images/ML_Info_Icon.png"
                 alt="ML Infomap Logo"
                 className="h-full w-full object-contain"
               />
             </div>
-            <div className="min-w-0">
-              {/* Letter spacing is tighter on phones so the name fits next to the buttons */}
-              <div className="-mb-2 -mt-2 whitespace-nowrap text-[16px] font-extrabold tracking-wider text-[#e4c411] min-[400px]:text-[18px] sm:text-[22px] sm:tracking-widest">
+
+            <div className="min-w-0 ">
+              <div className="-mb-2 -mt-2 whitespace-nowrap text-[18px] font-extrabold tracking-[0.15rem] text-[#e4c411]  sm:text-[25px]">
                 ML Infomap
               </div>
-              <div className="whitespace-nowrap text-[10px] tracking-wide text-[#e4c411] min-[400px]:text-[12px] sm:text-[14px] sm:tracking-widest">
-                Maps, Apps &amp; Data
+
+              <div className="whitespace-nowrap text-[13px] tracking-[0.12rem]  text-[#e4c411] sm:text-[14px]">
+                Maps, Apps & Data
               </div>
             </div>
-          </Link>
+          </div>
 
-          <div className="flex flex-shrink-0 items-center gap-2 sm:gap-5">
-            <div className="hidden items-center gap-6 md:flex">
-              {navLinks.map((link) => (
-                <a
-                  key={link.key}
-                  href={link.href}
-                  onClick={(e) => handleClick(e, link)}
-                  className="text-sm text-[#C4D0DF] hover:text-white"
-                >
-                  {link.label}
-                </a>
-              ))}
+          <div className="flex flex-shrink-0 items-center gap-5">
+            {/* Desktop navigation */}
+            <div className="hidden items-center gap-6 md:flex lg:gap-8">
+              {navLinks.map((link) =>
+                link.menu ? (
+                  <SourcesMenu
+                    key={link.key}
+                    label={link.label}
+                    className="text-sm text-[#C4D0DF] transition-colors duration-150 hover:text-white sm:text-base lg:text-[17px]"
+                  />
+                ) : (
+                  <a
+                    key={link.key}
+                    href={link.href}
+                    onClick={(e) => handleClick(e, link)}
+                    className="text-sm text-[#C4D0DF] transition-colors duration-150 hover:text-white sm:text-base lg:text-[17px]"
+                  >
+                    {link.label}
+                  </a>
+                ),
+              )}
             </div>
 
+            {/* Aaj Ka Bharat */}
             <a
               className="
             whitespace-nowrap
             rounded-lg
-            border border-[#e4c411]
-            px-2 py-1.5
-            text-[11px] font-semibold text-[#e4c411]
+            border border-[#F2C078]
+            px-3 py-1.5
+            text-[12px] font-semibold text-[#F2C078]
             transition-all duration-200 ease-in-out
 
             hover:bg-gradient-to-r
@@ -158,7 +271,6 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
 
             active:scale-[0.97]
 
-            min-[400px]:px-3 min-[400px]:text-[12px]
             sm:px-4 sm:py-2 sm:text-[14px]
             lg:px-5 lg:py-2.5 lg:text-[15px]
           "
@@ -166,75 +278,44 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               target="_blank"
               rel="noreferrer"
             >
-              Aaj Ka Bharat
-              <span className="hidden min-[400px]:inline">&nbsp;&#8599;</span>
+              Aaj Ka Bharat &#8599;
             </a>
-
-            {/* Admin dropdown — hardcoded placeholder menu for now */}
-            {/* <div ref={adminRef} className="relative hidden md:block">
-              <button
-                type="button"
-                onClick={() => setAdminOpen((o) => !o)}
-                className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 py-1 pl-1 pr-2.5 text-white hover:bg-white/10"
-              >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15">
-                  <i className="ti ti-user-circle text-base" />
-                </span>
-                <span className="text-[13px] font-semibold">Admin</span>
-                <i
-                  className={`ti ti-chevron-down text-xs transition-transform duration-150 ${adminOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {adminOpen && (
-                <div className="absolute right-0 top-[calc(100%+8px)] w-[160px] overflow-hidden rounded-[9px] border border-line bg-white shadow-card">
-                  {["Profile", "Settings", "Log out"].map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      className="block w-full px-3.5 py-2.5 text-left text-[13px] text-text hover:bg-soft"
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div> */}
           </div>
         </nav>
 
-        {/* Collapses its height (not just its opacity) so no empty space is left behind */}
+        {/* ================= MOBILE LOWER ROW ================= */}
         <div
-          className="grid md:hidden"
-          style={{
-            gridTemplateRows: showMobileRow ? "1fr" : "0fr",
-            opacity: showMobileRow ? 1 : 0,
-            pointerEvents: showMobileRow ? "auto" : "none",
-            transition:
-              "grid-template-rows 300ms ease-in-out, opacity 300ms ease-in-out",
-          }}
-          aria-hidden={!showMobileRow}
+          className={`
+        overflow-hidden
+        border-t border-white/10
+        transition-all duration-300 ease-in-out
+        md:hidden
+        ${
+          showMobileRow
+            ? "max-h-[56px] opacity-100"
+            : "max-h-0 opacity-0 border-t-0"
+        }
+      `}
         >
-          <div className="min-h-0 overflow-hidden">
-            <div className="flex items-center justify-between border-t border-white/10 py-2.5">
-              {navLinks.map((link) => (
+          <div className="flex items-center justify-between py-3">
+            {navLinks.map((link) =>
+              link.menu ? (
+                <SourcesMenu
+                  key={link.key}
+                  label={link.label}
+                  className="px-1 text-sm text-[#C4D0DF] hover:text-white"
+                />
+              ) : (
                 <a
                   key={link.key}
                   href={link.href}
                   onClick={(e) => handleClick(e, link)}
-                  tabIndex={showMobileRow ? 0 : -1}
                   className="px-1 text-sm text-[#C4D0DF] hover:text-white"
                 >
                   {link.label}
                 </a>
-              ))}
-
-              {showCensusYear && (
-                <span className="whitespace-nowrap rounded-full border border-[#e4c411]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[#e4c411]">
-                  Census {censusMeta.year}
-                </span>
-              )}
-            </div>
+              ),
+            )}
           </div>
         </div>
       </div>
