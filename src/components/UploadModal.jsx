@@ -213,6 +213,51 @@ export default function UploadModal() {
   const [error, setError] = useState("");
   const [uploadLevel, setUploadLevel] = useState(dashboardLevel);
 
+  // Drag the dialog anywhere on screen by its header.
+  const dialogRef = useRef(null);
+  const dragRef = useRef(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+  function startDrag(event) {
+    if (event.target.closest("button")) return; // the close button is not a handle
+    dragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      baseX: offset.x,
+      baseY: offset.y,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function moveDrag(event) {
+    const drag = dragRef.current;
+    const box = dialogRef.current;
+    if (!drag || !box) return;
+
+    // Keep the dialog fully inside the window.
+    const rect = box.getBoundingClientRect();
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    const nextX = drag.baseX + dx;
+    const nextY = drag.baseY + dy;
+    const minX = offset.x - rect.left;
+    const maxX = offset.x + (window.innerWidth - rect.right);
+    const minY = offset.y - rect.top;
+    const maxY = offset.y + (window.innerHeight - rect.bottom);
+
+    setOffset({
+      x: Math.min(Math.max(nextX, minX), maxX),
+      y: Math.min(Math.max(nextY, minY), maxY),
+    });
+  }
+
+  function endDrag(event) {
+    dragRef.current = null;
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
   // Start clean every time the modal opens, on the level the dashboard is showing.
   useEffect(() => {
     if (isModalOpen) {
@@ -221,6 +266,7 @@ export default function UploadModal() {
       setIsParsing(false);
       setIsPreparing(false);
       setUploadLevel(dashboardLevel);
+      setOffset({ x: 0, y: 0 });
     }
   }, [isModalOpen, dashboardLevel]);
 
@@ -288,13 +334,21 @@ export default function UploadModal() {
       }}
     >
       <div
+        ref={dialogRef}
+        style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="upload-modal-title"
-        className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-[0_20px_50px_rgba(0,0,0,.30)]"
+        className="w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-b from-white to-[#F3F5FB] shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-4px_0_rgba(2,2,68,.08),0_28px_50px_-12px_rgba(0,0,0,.45),0_6px_12px_rgba(0,0,0,.18)]"
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 bg-navy px-4 py-3">
+        <div
+          onPointerDown={startDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          className="flex cursor-move touch-none select-none items-start justify-between gap-3 bg-navy px-4 py-3"
+        >
           <div className="min-w-0">
             <h2
               id="upload-modal-title"
@@ -308,7 +362,7 @@ export default function UploadModal() {
           <button
             type="button"
             onClick={closeModal}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white/80 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/15 hover:text-white hover:shadow-[0_4px_10px_rgba(0,0,0,.35)] active:translate-y-0 active:scale-95"
             aria-label="Close"
           >
             <i className="ti ti-x" />
@@ -321,8 +375,21 @@ export default function UploadModal() {
           <div
             role="radiogroup"
             aria-label="Upload level"
-            className="mb-3 grid grid-cols-2 gap-0 overflow-hidden rounded-full border border-line bg-soft p-0"
+            className="relative mb-3 grid grid-cols-2 gap-0 overflow-hidden rounded-full border border-line bg-soft p-0 shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-2px_0_rgba(2,2,68,.06),0_6px_12px_-4px_rgba(2,2,68,.22),0_1px_3px_rgba(2,2,68,.08)]"
           >
+            {/* Sliding pill */}
+            <div
+              className="absolute inset-y-0 left-0 w-1/2 rounded-full bg-navy shadow-[0_6px_14px_rgba(2,2,68,.35),inset_0_1px_0_rgba(255,255,255,.25)] transition-transform duration-300 ease-[cubic-bezier(.68,-0.55,.265,1.55)]"
+              style={{
+                transform: `translateX(${
+                  Math.max(
+                    0,
+                    LEVEL_TABS.findIndex((t) => t.value === uploadLevel),
+                  ) * 100
+                }%)`,
+              }}
+            />
+
             {LEVEL_TABS.map((tab) => {
               const isActive = uploadLevel === tab.value;
 
@@ -336,8 +403,8 @@ export default function UploadModal() {
                     setUploadLevel(tab.value);
                     setError("");
                   }}
-                  className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-[12px] font-bold transition-colors duration-150 ${
-                    isActive ? "bg-navy text-white" : "text-navy hover:bg-white"
+                  className={`relative z-10 flex items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-[12px] font-bold transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 active:translate-y-0 active:scale-95 motion-reduce:transform-none ${
+                    isActive ? "text-white" : "text-navy"
                   }`}
                 >
                   <i className={`ti ${tab.icon}`} />
@@ -350,7 +417,7 @@ export default function UploadModal() {
           {/* Step 1: download the template. Same layout as step 2: the heading sits
               outside, and the box below it matches the upload box. */}
           <p className="mb-1.5 flex items-center gap-2 text-[12px] font-bold text-navy">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-bold text-white">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,.3),0_3px_6px_rgba(2,2,68,.35)] transition-transform duration-200 hover:-translate-y-0.5 hover:scale-110">
               1
             </span>
             Download the template
@@ -373,10 +440,10 @@ export default function UploadModal() {
                 handleTemplate();
               }
             }}
-            className={`mb-3 flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#C7CEDA] bg-soft px-4 py-5 text-center transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue ${
+            className={`mb-3 flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#C7CEDA] bg-gradient-to-b from-white to-soft shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-2px_0_rgba(2,2,68,.06),0_6px_12px_-4px_rgba(2,2,68,.22),0_1px_3px_rgba(2,2,68,.08)] px-4 py-5 text-center transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue ${
               isPreparing
                 ? "cursor-wait opacity-60"
-                : "cursor-pointer hover:border-blue hover:bg-white"
+                : "cursor-pointer hover:border-blue hover:bg-white hover:-translate-y-1 hover:shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-3px_0_rgba(2,2,68,.08),0_16px_24px_-6px_rgba(2,2,68,.32),0_4px_8px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.99] motion-reduce:transform-none"
             }`}
           >
             <i
@@ -401,7 +468,7 @@ export default function UploadModal() {
           </div>
 
           <p className="mb-1.5 flex items-center gap-2 text-[12px] font-bold text-navy">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-bold text-white">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,.3),0_3px_6px_rgba(2,2,68,.35)] transition-transform duration-200 hover:-translate-y-0.5 hover:scale-110">
               2
             </span>
             Upload the filled file
@@ -435,7 +502,7 @@ export default function UploadModal() {
             className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed px-4 py-5 text-center transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue ${
               isDragging
                 ? "scale-[1.01] border-blue bg-[#EEF3FF]"
-                : "border-[#C7CEDA] bg-soft hover:border-blue hover:bg-white"
+                : "border-[#C7CEDA] bg-gradient-to-b from-white to-soft shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-2px_0_rgba(2,2,68,.06),0_6px_12px_-4px_rgba(2,2,68,.22),0_1px_3px_rgba(2,2,68,.08)] hover:border-blue hover:bg-white hover:-translate-y-1 hover:shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-3px_0_rgba(2,2,68,.08),0_16px_24px_-6px_rgba(2,2,68,.32),0_4px_8px_rgba(2,2,68,.12)] active:translate-y-0 active:scale-[0.99] motion-reduce:transform-none"
             }`}
           >
             {isParsing ? (

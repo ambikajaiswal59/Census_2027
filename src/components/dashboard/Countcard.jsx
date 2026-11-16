@@ -28,7 +28,6 @@ export default function CountCard({ value, label, icon = "ti-map" }) {
   function handleLeave() {
     const el = cardRef.current;
     if (!el) return;
-
     el.style.setProperty("--rx", "0deg");
     el.style.setProperty("--ry", "0deg");
     el.style.setProperty("--shine", "0");

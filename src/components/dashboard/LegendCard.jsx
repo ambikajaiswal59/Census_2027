@@ -23,7 +23,7 @@ export default function LegendCard({
   const ramp = COLOR_RAMPS.find((r) => r.id === rampId) || COLOR_RAMPS[0];
 
   return (
-    <div className="flex flex-col rounded-2xl border border-line bg-white p-3 shadow-card sm:p-4 lg:h-full">
+    <div className="flex flex-col rounded-2xl border border-line p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-3px_0_rgba(2,2,68,.07),0_14px_26px_-8px_rgba(2,2,68,.28),0_3px_6px_rgba(2,2,68,.10)] bg-gradient-to-b from-white to-[#F3F5FB] sm:p-4 lg:h-full">
       {/* Classification */}
       <h3 className="mb-1.5 flex items-center gap-1.5 text-[13px] font-extrabold text-navy">
         <BarsIcon size="1.1em" className="shrink-0 text-blue" />
@@ -33,7 +33,7 @@ export default function LegendCard({
       <div
         role="radiogroup"
         aria-label="Classification"
-        className="mb-3 grid grid-cols-2 gap-x-2 rounded-xl border border-line bg-white p-3 shadow-sm lg:grid-cols-1 lg:gap-x-0"
+        className="mb-3 grid grid-cols-2 gap-x-2 rounded-xl border border-line p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-2px_0_rgba(2,2,68,.06),0_6px_12px_-4px_rgba(2,2,68,.2),0_1px_3px_rgba(2,2,68,.08)] bg-gradient-to-b from-white to-[#F6F8FC] lg:grid-cols-1 lg:gap-x-0"
       >
         {CLASSIFICATION_OPTIONS.map((count) => {
           const isSelected = classCount === count;
@@ -80,7 +80,7 @@ export default function LegendCard({
         Legend
       </h3>
 
-      <div className="rounded-xl border border-line bg-white p-3 shadow-sm">
+      <div className="rounded-xl border border-line p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-2px_0_rgba(2,2,68,.06),0_6px_12px_-4px_rgba(2,2,68,.2),0_1px_3px_rgba(2,2,68,.08)] bg-gradient-to-b from-white to-[#F6F8FC]">
         <h4 className="mb-2 min-w-0 break-words text-[12px] font-extrabold text-blue">
           {activeParamLabel}
         </h4>
@@ -122,7 +122,7 @@ export default function LegendCard({
         <ul
           role="listbox"
           aria-label="Colour ramp"
-          className="rounded-xl border border-line bg-white p-1"
+          className="rounded-xl border border-line p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-2px_0_rgba(2,2,68,.06),0_6px_12px_-4px_rgba(2,2,68,.2),0_1px_3px_rgba(2,2,68,.08)] bg-gradient-to-b from-white to-[#F6F8FC]"
         >
           {COLOR_RAMPS.map((r) => {
             const isSelected = r.id === rampId;

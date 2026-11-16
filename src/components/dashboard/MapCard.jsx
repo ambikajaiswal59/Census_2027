@@ -972,7 +972,7 @@ export default function MapCard({
             COLOR_RAMPS.find((r) => r.id === rampId)?.colors?.[3] || "#153E90";
 
           return (
-            <div className="pointer-events-none absolute bottom-2 right-2 z-10 w-[168px] max-w-[52%] rounded-xl border border-line bg-white/95 p-2 text-[11px] shadow-card backdrop-blur-sm sm:bottom-3 sm:right-3 sm:w-[210px] sm:p-3 sm:text-[12px]">
+            <div className="pointer-events-none absolute bottom-2 right-2 z-10 w-[168px] max-w-[52%] rounded-xl border border-line bg-gradient-to-b from-white to-[#F3F5FB] p-2 text-[11px] shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-3px_0_rgba(2,2,68,.07),0_12px_22px_-6px_rgba(2,2,68,.28),0_3px_6px_rgba(2,2,68,.1)] sm:bottom-3 sm:right-3 sm:w-[210px] sm:p-3 sm:text-[12px]">
               <div className="flex items-center gap-1.5 font-bold text-navy">
                 <span className="truncate">{summary.areaName}</span>
               </div>
@@ -990,7 +990,7 @@ export default function MapCard({
               {/* Only parameters that are part of another one show a percentage */}
               {summary.percent !== null && (
                 <div className="mt-1.5">
-                  <div className="flex items-baseline justify-between gap-2 font-semibold text-navy">
+                  <div className="flex items-baseline  gap-1 font-semibold text-navy">
                     <span>{summary.percent.toFixed(1)}%</span>
                     <span className="truncate text-[10px] font-normal text-muted sm:text-[11px]">
                       of {summary.parentLabel}
@@ -1011,33 +1011,31 @@ export default function MapCard({
           );
         })()}
 
-        {/* Labels on / off: top right */}
-        <button
-          type="button"
-          role="switch"
-          aria-checked={showLabels}
-          onClick={() => setShowLabels((v) => !v)}
-          title={showLabels ? "Hide names" : "Show names"}
-          className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-[11px] font-semibold text-navy shadow-card hover:bg-soft"
-        >
-          Label
-          <span
-            className={`relative h-4 w-7 rounded-full transition-colors ${showLabels ? "bg-navy" : "bg-[#C7CEDA]"}`}
-          >
-            <span
-              className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${showLabels ? "left-[14px]" : "left-0.5"}`}
-            />
-          </span>
-        </button>
-
         {/* Map controls: one column, bottom left */}
-        <div className="absolute bottom-3 left-3 z-10 flex flex-col items-center gap-1">
+        <div className="absolute bottom-3 left-3 z-10 flex flex-col items-center gap-2">
+          {/* Names on / off: "abc" button above the other controls */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showLabels}
+            onClick={() => setShowLabels((v) => !v)}
+            title={showLabels ? "Hide names" : "Show names"}
+            aria-label={showLabels ? "Hide names" : "Show names"}
+            className={`flex h-6 w-6 items-center justify-center rounded-lg ${
+              showLabels
+                ? "border border-navy bg-navy text-white shadow-[inset_0_1px_0_rgba(255,255,255,.3),0_1px_0_#010133,0_2px_4px_rgba(2,2,68,.35)] translate-y-[2px]"
+                : "text-navy border border-line bg-gradient-to-b from-white to-[#E6EBF4] shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_3px_0_#C7CEDA,0_6px_9px_rgba(2,2,68,.2)] transition-all duration-150 hover:from-white hover:to-[#EEF1F8] active:translate-y-[2px] active:shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_1px_0_#C7CEDA,0_2px_4px_rgba(2,2,68,.2)] motion-reduce:transition-none"
+            }`}
+          >
+            <i className="ti ti-abc text-[16px]" />
+          </button>
+
           {/* Zoom */}
-          <div className="flex flex-col overflow-hidden rounded-lg border border-line bg-white ">
+          <div className="flex flex-col overflow-hidden rounded-lg border border-line bg-gradient-to-b from-white to-[#E6EBF4] shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_3px_0_#C7CEDA,0_6px_9px_rgba(2,2,68,.2)] transition-all duration-150 hover:from-white hover:to-[#EEF1F8] active:translate-y-[2px] active:shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_1px_0_#C7CEDA,0_2px_4px_rgba(2,2,68,.2)] motion-reduce:transition-none">
             <button
               type="button"
               onClick={zoomIn}
-              className="flex h-6 w-6 items-center justify-center border-b border-line text-navy hover:bg-soft"
+              className="flex h-6 w-6 items-center justify-center border-b border-line text-navy hover:bg-white/60"
               aria-label="Zoom in"
               title="Zoom in"
             >
@@ -1047,7 +1045,7 @@ export default function MapCard({
             <button
               type="button"
               onClick={zoomOut}
-              className="flex h-6 w-6 items-center justify-center text-navy hover:bg-soft"
+              className="flex h-6 w-6 items-center justify-center text-navy hover:bg-white/60"
               aria-label="Zoom out"
               title="Zoom out"
             >
@@ -1059,7 +1057,7 @@ export default function MapCard({
           <button
             type="button"
             onClick={resetMap}
-            className="flex h-6 w-6 items-center justify-center rounded-lg border border-line bg-white text-navy  hover:bg-soft"
+            className="flex h-6 w-6 items-center justify-center rounded-lg text-navy border border-line bg-gradient-to-b from-white to-[#E6EBF4] shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_3px_0_#C7CEDA,0_6px_9px_rgba(2,2,68,.2)] transition-all duration-150 hover:from-white hover:to-[#EEF1F8] active:translate-y-[2px] active:shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_1px_0_#C7CEDA,0_2px_4px_rgba(2,2,68,.2)] motion-reduce:transition-none"
             aria-label="Reset map view"
             title="Reset map view"
           >
@@ -1070,7 +1068,7 @@ export default function MapCard({
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="flex h-6 w-6 items-center justify-center rounded-lg border border-line bg-white text-navy  hover:bg-soft"
+            className="flex h-6 w-6 items-center justify-center rounded-lg text-navy border border-line bg-gradient-to-b from-white to-[#E6EBF4] shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_3px_0_#C7CEDA,0_6px_9px_rgba(2,2,68,.2)] transition-all duration-150 hover:from-white hover:to-[#EEF1F8] active:translate-y-[2px] active:shadow-[inset_0_1px_0_rgba(255,255,255,.95),0_1px_0_#C7CEDA,0_2px_4px_rgba(2,2,68,.2)] motion-reduce:transition-none"
             aria-label={
               isFullscreen ? "Exit full screen" : "Enlarge map to full screen"
             }

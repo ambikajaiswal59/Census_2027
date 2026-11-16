@@ -174,7 +174,7 @@ export default function DashboardSidebar({
   };
 
   return (
-    <aside className="flex min-h-0 flex-col rounded-2xl border border-line bg-white p-3 shadow-card sm:p-4 lg:h-full">
+    <aside className="flex min-h-0 flex-col rounded-2xl border border-line p-3 shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-3px_0_rgba(2,2,68,.07),0_14px_26px_-8px_rgba(2,2,68,.28),0_3px_6px_rgba(2,2,68,.10)] bg-gradient-to-b from-white to-[#F3F5FB] sm:p-4 lg:h-full">
       <div className="relative mb-2 h-10 shrink-0 overflow-hidden rounded-full border border-line bg-white">
         <div
           className="absolute inset-y-0 left-0 w-1/2 rounded-full bg-navy shadow-[0_6px_14px_rgba(2,2,68,.35),inset_0_1px_0_rgba(255,255,255,.25)] transition-transform duration-300 ease-[cubic-bezier(.68,-0.55,.265,1.55)]"
@@ -225,8 +225,16 @@ export default function DashboardSidebar({
           <div
             role="tablist"
             aria-label="Parameter group"
-            className="mb-4 mt-2 grid shrink-0 grid-cols-3 gap-0 overflow-hidden rounded-full border border-line bg-soft p-0"
+            className="relative mb-4 mt-2 grid shrink-0 grid-cols-3 gap-0 overflow-hidden rounded-full border border-line bg-gradient-to-b from-[#EEF1F7] to-white p-0 shadow-[inset_0_2px_3px_rgba(2,2,68,.10),0_1px_0_rgba(255,255,255,.9)]"
           >
+            {/* Sliding pill behind the selected tab */}
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-[#8fc4e7] shadow-[inset_0_1px_0_rgba(255,255,255,.6),inset_0_-3px_0_rgba(2,2,68,.12)] transition-transform duration-300 ease-[cubic-bezier(.68,-0.55,.265,1.55)] motion-reduce:transition-none"
+              style={{
+                width: `${100 / groups.length}%`,
+                transform: `translateX(${Math.max(0, groups.indexOf(activeGroup)) * 100}%)`,
+              }}
+            />
             {groups.map((group) => {
               const isActive = group === activeGroup;
 
@@ -237,10 +245,10 @@ export default function DashboardSidebar({
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => switchGroup(group)}
-                  className={`rounded-full px-2 py-1 text-[11px] font-bold transition-colors duration-150 ${
+                  className={`relative z-10 rounded-full px-2 py-1 text-[11px] font-bold text-navy transition-all duration-200 ease-out active:brightness-95 motion-reduce:transition-none ${
                     isActive
-                      ? "bg-[#8fc4e7a2] text-navy"
-                      : "text-navy hover:bg-white"
+                      ? "bg-transparent"
+                      : "hover:bg-white hover:shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-3px_0_rgba(2,2,68,.10)]"
                   }`}
                 >
                   {group}

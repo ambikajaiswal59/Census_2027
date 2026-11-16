@@ -214,7 +214,7 @@ export default function DataTableCard({
   return (
     <div
       ref={cardRef}
-      className="relative z-10 flex h-full !border-t-4 !border-t-[#020244] max-h-[420px] min-h-0 flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(2,2,68,.10)] motion-reduce:transition-none lg:max-h-none"
+      className="relative z-10 flex h-full !border-t-4 !border-t-[#020244] max-h-[420px] min-h-0 flex-col overflow-hidden rounded-2xl border border-line shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-3px_0_rgba(2,2,68,.07),0_14px_26px_-8px_rgba(2,2,68,.28),0_3px_6px_rgba(2,2,68,.10)] bg-gradient-to-b from-white to-[#F3F5FB] transition-shadow duration-300 motion-reduce:transition-none lg:max-h-none"
     >
       {/* Header */}
       {/* <div className="relative z-20 flex flex-col gap-1.5 border-b border-white/10 bg-navy px-3 py-1.5 shadow-[0_3px_18px_rgba(0,0,0,.13)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4 sm:py-1.5">
