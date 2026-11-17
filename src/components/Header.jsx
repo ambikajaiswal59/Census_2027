@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "react-router-dom";
+// Only the small meta file (not the full census tables), so the year follows the stored data.
+import censusMeta from "../data/census/meta.json";
+
+// The census year is shown on this page only.
+const DASHBOARD_PATH = "/population-dashboard";
 
 const navLinks = [
   { href: "#directory", label: "Directory", key: "directory" },
@@ -141,6 +147,7 @@ function SourcesMenu({ label, className }) {
 
 export default function Header({ onScrollToCensus, onScrollToDirectory }) {
   const [showMobileRow, setShowMobileRow] = useState(true);
+  const showCensusYear = useLocation().pathname === DASHBOARD_PATH;
 
   useEffect(() => {
     let lastY = 0;
@@ -195,12 +202,32 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
   }, []);
 
   function handleClick(e, link) {
-    if (link.key === "census") {
-      e.preventDefault();
-      onScrollToCensus();
-    } else if (link.key === "directory") {
-      e.preventDefault();
-      onScrollToDirectory();
+    const handler =
+      link.key === "census"
+        ? onScrollToCensus
+        : link.key === "directory"
+          ? onScrollToDirectory
+          : null;
+
+    if (link.key !== "census" && link.key !== "directory") return; // not a scroll link
+
+    e.preventDefault();
+
+    // On the Home page the section scrolls into view. On every other page there is
+    // no such section, so go to the Home page and open the section there.
+    if (typeof handler === "function") {
+      handler();
+      return;
+    }
+
+    // No handler passed in: if the section is on this page, scroll to it smoothly
+    // (inside whichever area scrolls); otherwise open the Home page at that section.
+    const section = document.querySelector(link.href);
+
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.location.assign(`/${link.href}`);
     }
   }
 
@@ -208,10 +235,23 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
     <header className="sticky top-0 z-20 w-full shrink-0 bg-navy shadow-[0_3px_18px_rgba(0,0,0,.13)]">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         {/* ================= TOP ROW ================= */}
-        <nav className="flex min-h-[72px] items-center justify-between gap-2 py-2 sm:min-h-[84px] lg:min-h-[100px] sm:py-0">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3 lg:gap-4">
+        <nav className="relative flex min-h-[72px] items-center justify-between gap-2 py-2 sm:min-h-[84px] lg:min-h-[100px] sm:py-0">
+          {/* Census year, centred in the header (large screens, dashboard page only) */}
+          {showCensusYear && (
+            <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 xl:block">
+              <span className="whitespace-nowrap px-4 py-1 text-[25px] font-semibold tracking-wide text-[#e4c411]">
+                Census <span className="font-extrabold">{censusMeta.year}</span>
+              </span>
+            </div>
+          )}
+
+          <div className="flex min-w-0 shrink items-center gap-2 sm:gap-3 lg:gap-4">
             {/* Logo */}
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center sm:h-14 sm:w-14 lg:h-[68px] lg:w-[68px]">
+            <div
+              className={`flex flex-shrink-0 items-center justify-center sm:h-14 sm:w-14 md:max-lg:h-11 md:max-lg:w-11 lg:h-[68px] lg:w-[68px] ${
+                showCensusYear ? "h-11 w-11" : "h-10 w-10"
+              }`}
+            >
               <img
                 src="/images/ML_Info_Icon.png"
                 alt="ML Infomap Logo"
@@ -219,33 +259,59 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               />
             </div>
 
-            <div className="min-w-0 ">
-              <div className="-mb-2 -mt-2 whitespace-nowrap text-[18px] font-extrabold tracking-[0.15rem] text-[#e4c411]  sm:text-[25px]">
+            <div
+              className={`min-w-0 ${
+                showCensusYear
+                  ? "flex h-11 flex-col justify-center gap-1 sm:block sm:h-auto"
+                  : ""
+              }`}
+            >
+              <div
+                className={`whitespace-nowrap text-[18px] font-extrabold tracking-[0.15rem] text-[#e4c411] sm:-mb-2 sm:-mt-2 sm:text-[25px] md:max-lg:text-[20px] ${
+                  showCensusYear
+                    ? "leading-none sm:leading-normal"
+                    : "-mb-2 -mt-2"
+                }`}
+              >
                 ML Infomap
               </div>
 
-              <div className="whitespace-nowrap text-[13px] tracking-[0.12rem]  text-[#e4c411] sm:text-[14px]">
-                Maps, Apps & Data
+              <div
+                className={`whitespace-nowrap text-[13px] tracking-[0.12rem] text-[#e4c411] sm:text-[14px] md:max-lg:text-[12px] ${
+                  showCensusYear ? "leading-none sm:leading-normal" : ""
+                }`}
+              >
+                Maps, Apps &amp; Data
               </div>
             </div>
           </div>
 
-          <div className="flex flex-shrink-0 items-center gap-5">
+          {/* Tablets and laptops (768-1279px): the Census year sits in the free space
+              between the name and the links, so it can never touch them */}
+          {showCensusYear && (
+            <div className="hidden min-w-0 flex-1 justify-center md:flex xl:hidden">
+              <span className="whitespace-nowrap px-2 text-[15px] font-semibold tracking-wide text-[#e4c411] lg:text-[20px]">
+                Census <span className="font-extrabold">{censusMeta.year}</span>
+              </span>
+            </div>
+          )}
+
+          <div className="flex flex-shrink-0 items-center gap-5 md:max-lg:gap-3">
             {/* Desktop navigation */}
-            <div className="hidden items-center gap-6 md:flex lg:gap-8">
+            <div className="hidden items-center gap-3 md:flex lg:gap-8">
               {navLinks.map((link) =>
                 link.menu ? (
                   <SourcesMenu
                     key={link.key}
                     label={link.label}
-                    className="text-sm text-[#C4D0DF] transition-colors duration-150 hover:text-white sm:text-base lg:text-[17px]"
+                    className="whitespace-nowrap text-[13px] text-[#C4D0DF] transition-colors duration-150 hover:text-white lg:text-[17px]"
                   />
                 ) : (
                   <a
                     key={link.key}
                     href={link.href}
                     onClick={(e) => handleClick(e, link)}
-                    className="text-sm text-[#C4D0DF] transition-colors duration-150 hover:text-white sm:text-base lg:text-[17px]"
+                    className="whitespace-nowrap text-[13px] text-[#C4D0DF] transition-colors duration-150 hover:text-white lg:text-[17px]"
                   >
                     {link.label}
                   </a>
@@ -272,6 +338,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
             active:scale-[0.97]
 
             sm:px-4 sm:py-2 sm:text-[14px]
+            md:max-lg:px-3 md:max-lg:py-1.5 md:max-lg:text-[12px]
             lg:px-5 lg:py-2.5 lg:text-[15px]
           "
               href="https://aajkabharatweb.com/"
@@ -298,23 +365,30 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
       `}
         >
           <div className="flex items-center justify-between py-3">
-            {navLinks.map((link) =>
-              link.menu ? (
-                <SourcesMenu
-                  key={link.key}
-                  label={link.label}
-                  className="px-1 text-sm text-[#C4D0DF] hover:text-white"
-                />
-              ) : (
-                <a
-                  key={link.key}
-                  href={link.href}
-                  onClick={(e) => handleClick(e, link)}
-                  className="px-1 text-sm text-[#C4D0DF] hover:text-white"
-                >
-                  {link.label}
-                </a>
-              ),
+            {/* Dashboard page: the lower row shows the Census year instead of the links */}
+            {showCensusYear ? (
+              <span className="mx-auto whitespace-nowrap text-[17px] font-semibold tracking-wide text-[#e4c411]">
+                Census <span className="font-extrabold">{censusMeta.year}</span>
+              </span>
+            ) : (
+              navLinks.map((link) =>
+                link.menu ? (
+                  <SourcesMenu
+                    key={link.key}
+                    label={link.label}
+                    className="px-1 text-sm text-[#C4D0DF] hover:text-white"
+                  />
+                ) : (
+                  <a
+                    key={link.key}
+                    href={link.href}
+                    onClick={(e) => handleClick(e, link)}
+                    className="px-1 text-sm text-[#C4D0DF] hover:text-white"
+                  >
+                    {link.label}
+                  </a>
+                ),
+              )
             )}
           </div>
         </div>
