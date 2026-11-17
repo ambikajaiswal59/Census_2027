@@ -372,6 +372,9 @@ export default function MapCard({
   }, [selectedRow]);
 
   const isDistrict = level === "District";
+
+  // True for a census parameter; false when an uploaded dataset is shown on the map.
+  const isBuiltInParam = getParameters().some((p) => p.key === activeParamKey);
   const geographyUrl = isDistrict ? DISTRICT_GEOJSON_URL : STATE_GEOJSON_URL;
 
   const currentData = isDistrict ? districtData : stateData;
@@ -966,50 +969,54 @@ export default function MapCard({
           </div>
         )}
 
-        {/* Selected parameter card: figure, and its share of the parent parameter */}
-        {(() => {
-          const accent =
-            COLOR_RAMPS.find((r) => r.id === rampId)?.colors?.[3] || "#153E90";
+        {/* Selected parameter card: figure, and its share of the parent parameter.
+            Hidden while an uploaded (Custom Map Builder) dataset is on the map: that
+            data is not a census parameter, so it has no total or parent share. */}
+        {isBuiltInParam &&
+          (() => {
+            const accent =
+              COLOR_RAMPS.find((r) => r.id === rampId)?.colors?.[3] ||
+              "#153E90";
 
-          return (
-            <div className="pointer-events-none absolute bottom-2 right-2 z-10 w-[168px] max-w-[52%] rounded-xl border border-line bg-gradient-to-b from-white to-[#F3F5FB] p-2 text-[11px] shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-3px_0_rgba(2,2,68,.07),0_12px_22px_-6px_rgba(2,2,68,.28),0_3px_6px_rgba(2,2,68,.1)] sm:bottom-3 sm:right-3 sm:w-[210px] sm:p-3 sm:text-[12px]">
-              <div className="flex items-center gap-1.5 font-bold text-navy">
-                <span className="truncate">{summary.areaName}</span>
-              </div>
-
-              <div className="mt-1 break-words leading-snug text-muted">
-                {activeParamLabel}
-              </div>
-
-              <div className="mt-0.5 text-[16px] font-extrabold leading-tight text-navy sm:text-[20px]">
-                {summary.value !== null
-                  ? formatValue(summary.value)
-                  : "Data unavailable"}
-              </div>
-
-              {/* Only parameters that are part of another one show a percentage */}
-              {summary.percent !== null && (
-                <div className="mt-1.5">
-                  <div className="flex items-baseline  gap-1 font-semibold text-navy">
-                    <span>{summary.percent.toFixed(1)}%</span>
-                    <span className="truncate text-[10px] font-normal text-muted sm:text-[11px]">
-                      of {summary.parentLabel}
-                    </span>
-                  </div>
-                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[#E7EBF0]">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${Math.min(100, Math.max(0, summary.percent))}%`,
-                        background: accent,
-                      }}
-                    />
-                  </div>
+            return (
+              <div className="pointer-events-none absolute bottom-2 right-2 z-10 w-[168px] max-w-[52%] rounded-xl border border-line bg-gradient-to-b from-white to-[#F3F5FB] p-2 text-[11px] shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-3px_0_rgba(2,2,68,.07),0_12px_22px_-6px_rgba(2,2,68,.28),0_3px_6px_rgba(2,2,68,.1)] sm:bottom-3 sm:right-3 sm:w-[210px] sm:p-3 sm:text-[12px]">
+                <div className="flex items-center gap-1.5 font-bold text-navy">
+                  <span className="truncate">{summary.areaName}</span>
                 </div>
-              )}
-            </div>
-          );
-        })()}
+
+                <div className="mt-1 break-words leading-snug text-muted">
+                  {activeParamLabel}
+                </div>
+
+                <div className="mt-0.5 text-[16px] font-extrabold leading-tight text-navy sm:text-[20px]">
+                  {summary.value !== null
+                    ? formatValue(summary.value)
+                    : "Data unavailable"}
+                </div>
+
+                {/* Only parameters that are part of another one show a percentage */}
+                {summary.percent !== null && (
+                  <div className="mt-1.5">
+                    <div className="flex items-baseline justify-between gap-2 font-semibold text-navy">
+                      <span>{summary.percent.toFixed(1)}%</span>
+                      <span className="truncate text-[10px] font-normal text-muted sm:text-[11px]">
+                        of {summary.parentLabel}
+                      </span>
+                    </div>
+                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[#E7EBF0]">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.min(100, Math.max(0, summary.percent))}%`,
+                          background: accent,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
         {/* Map controls: one column, bottom left */}
         <div className="absolute bottom-3 left-3 z-10 flex flex-col items-center gap-2">

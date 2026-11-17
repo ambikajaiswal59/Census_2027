@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import Header from "../components/Header.jsx";
+
 import Hero from "../components/Hero.jsx";
 import ListPanel from "../components/ListPanel.jsx";
 import { useStats } from "../useStats.js";
@@ -7,7 +7,7 @@ import { phaseData } from "../data/phaseData.js";
 import { sourceData } from "../data/sourceData.js";
 import PhaseModal from "../components/PhaseModal.jsx";
 import DirectoryExplorer from "../components/DirectoryExplorer.jsx";
-import Footer from "../components/Footer.jsx";
+
 import AnnouncementTicker from "../components/AnnouncementTicker.jsx";
 import useNationalStats from "../hooks/useNationalStats.js";
 
@@ -177,8 +177,6 @@ export default function Home() {
           </section>
         </section>
       </main>
-
-      <Footer />
 
       <PhaseModal activeItem={activeItem} onClose={() => setActiveItem(null)} />
     </>
