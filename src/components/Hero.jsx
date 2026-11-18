@@ -3,6 +3,7 @@ import StatCard from "./StatCard.jsx";
 import { fmt } from "../utils.js";
 import useCountUp from "../hooks/useCountUp.js";
 import { useNavigate } from "react-router-dom";
+import { SHOW_POPULATION_DASHBOARD } from "../config/features.js";
 
 const HERO_STATS = [
   { icon: "ti-flag", key: "states_uts", label: "States & UTs" },
@@ -68,23 +69,25 @@ export default function Hero({ onScrollToCensus, onScrollToDirectory, stats }) {
                 </span>
               </a>
 
-              {/* Clickable Census 2011 Forerunner logo: right next to the button, same height */}
-              <button
-                type="button"
-                onClick={() => {
-                  // Short pause so the press animation is seen before the page changes
-                  setTimeout(() => navigate("/population-dashboard"), 250);
-                }}
-                aria-label="Explore Census directory"
-                title="Explore census Directory"
-                className="group inline-flex h-[52px] w-full flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[#0F2A4A] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent] sm:w-[270px]"
-              >
-                <img
-                  src="/images/census-2011.jpeg"
-                  alt="Census 2011 Forerunner"
-                  className="h-full w-full object-fill transition-[filter] duration-300 ease-out group-hover:brightness-125 group-active:brightness-90"
-                />
-              </button>
+              {/* Hidden until the Population Dashboard is ready (see config/features.js) */}
+              {SHOW_POPULATION_DASHBOARD && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Short pause so the press animation is seen before the page changes
+                    setTimeout(() => navigate("/population-dashboard"), 250);
+                  }}
+                  aria-label="Explore Census directory"
+                  title="Explore census Directory"
+                  className="group inline-flex h-[52px] w-full flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[#0F2A4A] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent] sm:w-[270px]"
+                >
+                  <img
+                    src="/images/census-2011.jpeg"
+                    alt="Census 2011 Forerunner"
+                    className="h-full w-full object-fill transition-[filter] duration-300 ease-out group-hover:brightness-125 group-active:brightness-90"
+                  />
+                </button>
+              )}
             </div>
           </div>
 

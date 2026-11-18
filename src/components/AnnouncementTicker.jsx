@@ -72,44 +72,48 @@ export default function AnnouncementTicker({ label = "Announcements" }) {
   return (
     <section
       aria-label={label}
-      className="mb-4 flex items-center gap-3 rounded-lg border border-[#F2C078]/60 bg-gradient-to-b from-[#FFF9EC] to-[#FCEBC8] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.8),0_6px_14px_-6px_rgba(15,42,74,.35)]"
+      className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-[#F2C078]/60 bg-gradient-to-b from-[#FFF9EC] to-[#FCEBC8] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.8),0_6px_14px_-6px_rgba(15,42,74,.35)]"
     >
       <style>{`@keyframes tickerMove { from { transform: translateX(0); } to { transform: translateX(-50%); } } @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none !important; } }`}</style>
 
-      <span className="box-border flex h-9 shrink-0 items-center justify-center rounded-full bg-[#0F2A4A] px-5 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
+      <span className="mx-auto sm:mx-0 box-border flex h-9 shrink-0 items-center justify-center rounded-full bg-[#0F2A4A] px-5 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]">
         {label}
       </span>
 
       <i className="ti ti-volume hidden shrink-0 text-[18px] text-[#0F2A4A] sm:block" />
 
-      <div
-        className="min-w-0 flex-1 overflow-hidden"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onFocus={() => setHovered(true)}
-        onBlur={() => setHovered(false)}
-      >
-        <ul
-          ref={trackRef}
-          className="ticker-track m-0 flex w-max list-none p-0"
-          style={{
-            animation: `tickerMove ${duration}s linear infinite`,
-            animationPlayState: running ? "running" : "paused",
-          }}
+      {/* Headlines with the Pause button at their right end: on phones this is a row
+          of its own under the label, from tablet width up it shares the single line */}
+      <div className="flex min-w-0 basis-full items-center gap-2 sm:flex-1 sm:basis-0 sm:gap-3">
+        <div
+          className="min-w-0 flex-1 overflow-hidden"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onFocus={() => setHovered(true)}
+          onBlur={() => setHovered(false)}
         >
-          {renderList(0)}
-          {renderList(1)}
-        </ul>
-      </div>
+          <ul
+            ref={trackRef}
+            className="ticker-track m-0 flex w-max list-none p-0"
+            style={{
+              animation: `tickerMove ${duration}s linear infinite`,
+              animationPlayState: running ? "running" : "paused",
+            }}
+          >
+            {renderList(0)}
+            {renderList(1)}
+          </ul>
+        </div>
 
-      <button
-        type="button"
-        onClick={() => setPaused((p) => !p)}
-        aria-pressed={paused}
-        className="box-border flex h-9 shrink-0 items-center justify-center rounded-full bg-[#0F2A4A] px-5 text-sm font-bold text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]"
-      >
-        {paused ? "Play" : "Pause"}
-      </button>
+        <button
+          type="button"
+          onClick={() => setPaused((p) => !p)}
+          aria-pressed={paused}
+          className="box-border flex h-6 shrink-0 items-center justify-center rounded-full bg-[#0F2A4A] px-2.5 text-[11px] font-bold sm:h-9 sm:px-5 sm:text-sm text-[#F2C078] shadow-md shadow-[#0F2A4A]/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#16385E] hover:shadow-lg hover:shadow-[#0F2A4A]/25 active:translate-y-0 active:scale-[0.98] focus:outline-none focus-visible:outline-none [-webkit-tap-highlight-color:transparent]"
+        >
+          {paused ? "Play" : "Pause"}
+        </button>
+      </div>
     </section>
   );
 }

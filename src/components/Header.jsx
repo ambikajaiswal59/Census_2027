@@ -235,7 +235,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
     <header className="sticky top-0 z-20 w-full shrink-0 bg-navy shadow-[0_3px_18px_rgba(0,0,0,.13)]">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         {/* ================= TOP ROW ================= */}
-        <nav className="relative flex min-h-[72px] items-center justify-between gap-2 py-2 sm:min-h-[84px] lg:min-h-[100px] sm:py-0">
+        <nav className="relative flex min-h-[72px] items-center justify-between gap-1.5 py-2 sm:min-h-[84px] lg:min-h-[100px] sm:py-0">
           {/* Census year, centred in the header (large screens, dashboard page only) */}
           {showCensusYear && (
             <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 xl:block">
@@ -249,7 +249,9 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
             {/* Logo */}
             <div
               className={`flex flex-shrink-0 items-center justify-center sm:h-14 sm:w-14 md:max-lg:h-11 md:max-lg:w-11 lg:h-[68px] lg:w-[68px] ${
-                showCensusYear ? "h-11 w-11" : "h-10 w-10"
+                showCensusYear
+                  ? "h-11 w-11 max-[400px]:h-9 max-[400px]:w-9"
+                  : "h-10 w-10 max-[400px]:h-9 max-[400px]:w-9"
               }`}
             >
               <img
@@ -267,7 +269,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               }`}
             >
               <div
-                className={`whitespace-nowrap text-[18px] font-extrabold tracking-[0.15rem] text-[#e4c411] sm:-mb-2 sm:-mt-2 sm:text-[25px] md:max-lg:text-[20px] ${
+                className={`whitespace-nowrap text-[18px] font-extrabold tracking-[0.15rem] max-[400px]:text-[15px] max-[400px]:tracking-[0.05rem] text-[#e4c411] sm:-mb-2 sm:-mt-2 sm:text-[25px] md:max-lg:text-[20px] ${
                   showCensusYear
                     ? "leading-none sm:leading-normal"
                     : "-mb-2 -mt-2"
@@ -277,7 +279,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               </div>
 
               <div
-                className={`whitespace-nowrap text-[13px] tracking-[0.12rem] text-[#e4c411] sm:text-[14px] md:max-lg:text-[12px] ${
+                className={`whitespace-nowrap text-[13px] tracking-[0.12rem] max-[400px]:text-[10px] max-[400px]:tracking-[0.03rem] text-[#e4c411] sm:text-[14px] md:max-lg:text-[12px] ${
                   showCensusYear ? "leading-none sm:leading-normal" : ""
                 }`}
               >
@@ -325,7 +327,7 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
             whitespace-nowrap
             rounded-lg
             border border-[#F2C078]
-            px-3 py-1.5
+            px-3 py-1.5 max-[400px]:px-2 max-[400px]:py-1 max-[400px]:text-[11px]
             text-[12px] font-semibold text-[#F2C078]
             transition-all duration-200 ease-in-out
 
@@ -345,7 +347,8 @@ export default function Header({ onScrollToCensus, onScrollToDirectory }) {
               target="_blank"
               rel="noreferrer"
             >
-              Aaj Ka Bharat &#8599;
+              Aaj Ka Bharat
+              <span className="hidden min-[400px]:inline">&nbsp;&#8599;</span>
             </a>
           </div>
         </nav>

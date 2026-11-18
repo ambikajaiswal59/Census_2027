@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { CONTENT_PROTECTION, ALLOW_DEVTOOLS } from "../config/features.js";
 
 // Makes the page harder to copy from: no text selection, no right click, no copy /
 // cut / drag, and no common "save / view source / print" shortcuts. Typing and
@@ -7,8 +8,15 @@ import { useEffect } from "react";
 //
 // Note: this is a deterrent only. A browser always has the page's code, so it can
 // not stop a determined person, and it can never block screenshots.
+//
+//
+// The switches live in src/config/features.js: CONTENT_PROTECTION (whole feature on/off)
+// and ALLOW_DEVTOOLS (F12 / Ctrl+Shift+I / J / C; allowed in dev, blocked when published).
+
 export default function useContentProtection() {
   useEffect(() => {
+    if (!CONTENT_PROTECTION) return undefined;
+
     const isField = (target) =>
       target instanceof Element &&
       Boolean(target.closest("input, textarea, [contenteditable='true']"));
@@ -25,8 +33,9 @@ export default function useContentProtection() {
       const mod = event.ctrlKey || event.metaKey;
 
       const devTools =
-        key === "f12" ||
-        (mod && event.shiftKey && ["i", "j", "c"].includes(key));
+        !ALLOW_DEVTOOLS &&
+        (key === "f12" ||
+          (mod && event.shiftKey && ["i", "j", "c"].includes(key)));
       const pageShortcuts = mod && ["u", "s", "p"].includes(key);
       const copyShortcuts =
         mod && ["c", "x", "a"].includes(key) && !isField(event.target);
