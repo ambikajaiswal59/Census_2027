@@ -1,5 +1,17 @@
 export const sourceData = [
   {
+    title: "Self-enumeration for Ph-2 of Census starts",
+    source: "Hindustand Times",
+    date: "17 November, 2026",
+    icon: "ti-building-bank",
+    summary:
+      "Census 2027 Phase II (population enumeration) is likely to begin in Delhi on January 10, with self-enumeration first and door-to-door visits by enumerators after that. Officials say the dates are still tentative.",
+    points: [
+      "The Centre announced that self-enumeration for Phase II of Census 2027 (Population Enumeration) has begun in Goa, Punjab, Uttar Pradesh and the non-snow-bound areas of Uttarakhand. Residents can submit their household details online until November 30, 2026. House-to-house enumeration in these areas will run from December 1, 2026 to January 4, 2027, followed by a revisional round from January 5 to 9. The remaining States and UTs will follow from January 2027, with a reference date of March 1, 2027. Phase I (Houselisting) is complete in 35 States and UTs, while the exercise in Manipur is on hold.",
+    ],
+    link: "/images/census-hindustantimes-nov17.jpeg",
+  },
+  {
     title: "Census: door-to-door enumeration from Jan.25 to Feb.28  ",
     source: "The Hindu",
     date: "31 October, 2026",
@@ -65,7 +77,7 @@ export const sourceData = [
     date: "7 OCtober, 2026",
     icon: "ti-news",
     summary:
-      'The MHA notification setting out the Houselisting & Housing Census window and the self-enumeration option.',
+      "The Registrar General flags that Population Enumeration leaves far less room for error than Phase I, and calls enumerator training critical.",
     points: [
       " Ladakh completed entire Census exercise on October 5, first among all States and UTs; snow-bound areas of Himalayan States also completed the exercise; many people confused Census with SIR exercise, says J&K Census chief",
     ],

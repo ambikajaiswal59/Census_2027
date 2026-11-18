@@ -1,53 +1,71 @@
+
 import { useEffect, useState } from "react";
+import { getAnnouncements, hasBackend } from "../api.js";
 
 // ─────────────────────────────────────────────────────────────
 // Announcements for the moving line on the Home page.
 //
-// Today: dummy data. Later: set ANNOUNCEMENTS_URL (or change fetchAnnouncements)
-// and nothing else in the app changes — the ticker only ever sees the shape that
-// normalizeAnnouncement() returns:
-//   { id: string|number, text: string, isNew: boolean, href?: string }
+// Backend: GET /censusapi/api/announcements
+//   { count, data: [{ id, serial_number, title, link, created_at }] }
+// The call itself lives in src/api/api.js (getAnnouncements).
+//
+// The ticker only ever sees the shape normalizeAnnouncement() returns:
+//   { id, text, isNew, href }
+// so a change in the API only ever needs a change in this file.
 // ─────────────────────────────────────────────────────────────
 
-// Set this to the backend endpoint when it is ready, e.g. in .env:
-//   VITE_ANNOUNCEMENTS_URL=http://192.168.1.28:6999/announcements
-const ANNOUNCEMENTS_URL =
-  (typeof import.meta !== "undefined" &&
-    import.meta.env?.VITE_ANNOUNCEMENTS_URL) ||
-  "";
+// An announcement counts as "New" for this many days after it was created.
+const NEW_FOR_DAYS = 7;
 
+// Used only when no backend URL is configured (VITE_API_BASE_URL is empty).
 const DUMMY_ANNOUNCEMENTS = [
-  { id: 1, text: "Dummy: Census of India 2027 — house listing schedule", isNew: true },
-  { id: 2, text: "Dummy: Notification on Census amendment rules, 2026", isNew: true },
-  { id: 3, text: "Dummy: Self-enumeration portal guidance for households", isNew: false },
-  { id: 4, text: "Dummy: Training schedule for enumerators released", isNew: false },
+  {
+    id: 1,
+    text: "(i) Dummy: Census of India 2027 — house listing schedule",
+    isNew: true,
+  },
+  {
+    id: 2,
+    text: "(ii) Dummy: Notification on Census amendment rules, 2026",
+    isNew: true,
+  },
+  {
+    id: 3,
+    text: "(iii) Dummy: Self-enumeration portal guidance for households",
+    isNew: false,
+  },
 ];
 
-// Turns one backend record into the shape the ticker uses. Adjust the field names
-// here when the real API is known — this is the only place that has to change.
-function normalizeAnnouncement(raw, index) {
+function isRecent(createdAt) {
+  const time = Date.parse(createdAt);
+  if (Number.isNaN(time)) return false;
+  return Date.now() - time < NEW_FOR_DAYS * 24 * 60 * 60 * 1000;
+}
+
+// One backend record -> what the ticker draws, e.g. "(ii) ORGI Gazette Notification…"
+function normalizeAnnouncement(raw) {
+  const title = String(raw.title ?? "").trim();
+  const serial = String(raw.serial_number ?? "").trim();
+
   return {
-    id: raw.id ?? index,
-    text: String(raw.text ?? raw.title ?? "").trim(),
-    isNew: Boolean(raw.isNew ?? raw.is_new ?? raw.new),
-    href: raw.href ?? raw.url ?? raw.link ?? undefined,
+    id: raw.id,
+    text: serial ? `(${serial}) ${title}` : title,
+    isNew: isRecent(raw.created_at),
+    href: raw.link || undefined,
   };
 }
 
 async function fetchAnnouncements(signal) {
-  // No endpoint yet: use the dummy list.
-  if (!ANNOUNCEMENTS_URL) {
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    return DUMMY_ANNOUNCEMENTS;
-  }
+  // No backend configured: show the dummy list.
+  if (!hasBackend) return DUMMY_ANNOUNCEMENTS;
 
-  const res = await fetch(ANNOUNCEMENTS_URL, { signal });
-  if (!res.ok) throw new Error(`Announcements request failed (${res.status})`);
+  const json = await getAnnouncements(signal);
+  const list = Array.isArray(json) ? json : json?.data || [];
 
-  const json = await res.json();
-  // Accept either a plain array or { items: [...] } / { data: [...] }.
-  const list = Array.isArray(json) ? json : json.items || json.data || [];
-  return list.map(normalizeAnnouncement).filter((item) => item.text);
+  return list
+    .map(normalizeAnnouncement)
+    .filter((item) => item.text)
+    .sort((a, b) => a.id - b.id); // the API list is not in order (…5, 9, 6…)
 }
 
 export default function useAnnouncements() {
